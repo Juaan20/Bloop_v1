@@ -228,3 +228,30 @@ Navegador ──> Vercel (Angular)
   la plataforma arranca vacia y el pago online requiere claves de Stripe en modo test.
 - El webhook de Stripe debe apuntar directamente al backend: `https://<backend>/api/payments/stripe/webhook`.
 
+## Estado del despliegue
+
+Registro de lo que ya esta montado (noviembre de 2026). Las claves y contrasenas **no estan en este repositorio**:
+viven en el panel de cada servicio y, en local, en `.env` / `.env.local` (ignorados por Git).
+
+| Pieza | Servicio | Estado | Detalles |
+|---|---|---|---|
+| Base de datos | **Neon** (plan gratuito) | Hecho y probado | Proyecto enlazado con `neon init` (`neon.ts`), rama `production`, region `us-east-2` (Ohio), PostgreSQL 18. Flyway ya ha aplicado las 17 migraciones. Probado en modo `prod`: arranque, lectura, registro, login y borrado de cuenta. |
+| Imagenes | **Cloudinary** (plan gratuito) | Hecho y probado | Carpeta `bloop`. Probado desde el backend: subida, descarga desde `res.cloudinary.com` y borrado. |
+| Backend | **Render** (plan Free) | En despliegue | Blueprint `Bloop` creado desde `render.yaml` con el servicio `bloop-backend` (Docker, region Ohio). URL prevista: `https://bloop-backend.onrender.com`. |
+| Frontend | **Vercel** (plan Hobby) | Pendiente | Se importa el repositorio con *Root Directory* = `frontend`. Despues se actualizan `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` en Render con la URL definitiva. |
+| Correo | **Gmail** (SMTP con contrasena de aplicacion) | Configurado | `smtp.gmail.com:587` con STARTTLS. Pendiente de comprobar que Render no bloquea el puerto SMTP. |
+| Pagos | Stripe (modo test) | Desactivado | Sin claves: la web funciona, pero sin pago online. |
+
+**Variables rellenadas en Render** (solo los nombres; los valores estan en el panel de Render):
+`DB_URL`, `DB_USERNAME`, `DB_PASSWORD` (conexion directa de Neon), `PUBLIC_URL`, `CORS_ALLOWED_ORIGINS`,
+`MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM`,
+`MEDIA_CLOUDINARY_CLOUD_NAME`, `MEDIA_CLOUDINARY_API_KEY`, `MEDIA_CLOUDINARY_API_SECRET`.
+El resto (`SPRING_PROFILES_ACTIVE=prod`, puerto, memoria de la JVM, pool de conexiones, `JWT_SECRET`, `QR_SECRET`...)
+lo pone `render.yaml`; los dos secretos los genera Render.
+
+**Pasos que quedan**
+1. Esperar a que Render termine el primer despliegue y comprobar `https://bloop-backend.onrender.com/actuator/health` (`UP`).
+2. Desplegar el frontend en Vercel. Si la URL del backend es otra, cambiarla en `frontend/vercel.json`.
+3. Poner la URL de Vercel en `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` de Render.
+4. Crear el primer administrador de la plataforma (en produccion no hay datos de demostracion) y probar un correo real.
+
