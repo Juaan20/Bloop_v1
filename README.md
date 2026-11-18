@@ -223,20 +223,3 @@ Navegador ──> Vercel (Angular)
   la plataforma arranca vacia y el pago online requiere claves de Stripe en modo test.
 - El webhook de Stripe debe apuntar directamente al backend: `https://<backend>/api/payments/stripe/webhook`.
 
-## Sincronizacion con VENUEFLOW
-
-BLOOP_V2 es la **copia publica e independiente** de VENUEFLOW, que sigue siendo el proyecto principal de desarrollo.
-Los dos repositorios no comparten Git ni remoto, y **no existe ninguna sincronizacion automatica**.
-
-- La sincronizacion es **manual y unidireccional**: VENUEFLOW -> BLOOP_V2. Nunca al reves.
-- Solo se hace cuando el propietario lo pide expresamente (por ejemplo: *"Pasa los cambios de VENUEFLOW a BLOOP_V2"*).
-- `.sync/venueflow-sync.txt` guarda el ultimo commit de VENUEFLOW copiado.
-
-Procedimiento:
-1. Comparar VENUEFLOW desde el ultimo commit registrado hasta el actual (`git diff --stat <commit> HEAD` en VENUEFLOW).
-2. Copiar solo los ficheros de codigo y configuracion cambiados, excluyendo `docs/` y el README de VENUEFLOW.
-3. No sobrescribir lo propio de BLOOP_V2: `README.md`, `CLAUDE.md`, `.gitignore`, `.env*`, `render.yaml`,
-   `frontend/vercel.json` y `.sync/`. Si un mismo fichero ha cambiado en los dos proyectos, no se pisa: se analiza y se consulta.
-4. No borrar funcionalidades de BLOOP_V2 sin revisar antes las diferencias.
-5. Compilar y pasar las pruebas de backend y frontend, y comprobar que VENUEFLOW sigue intacto.
-6. Anotar el nuevo commit en `.sync/venueflow-sync.txt`. Commit y push **solo** si el propietario lo pide.
