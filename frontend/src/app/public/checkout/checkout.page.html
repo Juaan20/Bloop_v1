@@ -1,0 +1,112 @@
+<section class="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+  @if (loading()) {
+    <vf-spinner label="Cargando pedido..." />
+  } @else if (order(); as o) {
+    @if (o.status === 'PAID') {
+      <!-- Compra completada -->
+      <div class="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-transparent p-8 text-center">
+        <div class="mx-auto grid size-16 animate-pop-in place-items-center rounded-full bg-emerald-400 text-zinc-950 shadow-[0_0_40px_-8px_var(--color-emerald-400)]"><vf-icon name="check" class="size-8" [stroke]="3" /></div>
+        <h1 class="mt-6 font-display text-3xl font-bold text-white">¡Compra completada!</h1>
+        <p class="mt-2 text-zinc-300">Pedido <span class="font-mono text-white">{{ o.reference }}</span> · {{ o.ticketCount }} {{ o.ticketCount === 1 ? 'entrada' : 'entradas' }}</p>
+        <p class="mt-1 text-sm text-zinc-500">Te hemos enviado la confirmacion a {{ o.buyerEmail }}.</p>
+        <a routerLink="/cuenta/entradas" class="mt-8 inline-flex rounded-xl bg-white px-6 py-3 font-semibold text-black hover:bg-zinc-200">Ver mis entradas con QR</a>
+      </div>
+    } @else {
+      <div class="flex items-center justify-between">
+        <h1 class="font-display text-3xl font-bold text-white">Finaliza tu compra</h1>
+        <vf-status-badge [status]="o.status" />
+      </div>
+
+      <div class="mt-8 rounded-2xl border border-white/10 bg-zinc-950 p-6">
+        <p class="text-sm text-zinc-400">{{ o.venueName }} · {{ o.sessionStartsAt | date: 'EEEE d MMMM, HH:mm' }}</p>
+        <h2 class="mt-1 font-display text-xl font-semibold text-white">{{ o.eventName }}</h2>
+        <ul class="mt-5 space-y-2 text-sm">
+          @for (item of o.items; track item.ticketTypeId) {
+            <li class="flex justify-between text-zinc-300">
+              <span>{{ item.quantity }} × {{ item.ticketTypeName }}</span><span>{{ item.lineTotal | currency: o.currency }}</span>
+            </li>
+          }
+        </ul>
+        @if (o.discountAmount > 0) {
+          <div class="mt-4 space-y-1 border-t border-white/10 pt-4 text-sm">
+            <p class="flex justify-between text-zinc-400"><span>Subtotal</span><span>{{ o.subtotalAmount | currency: o.currency }}</span></p>
+            <p class="flex justify-between text-emerald-300"><span>Codigo {{ o.promoCode }}</span><span>-{{ o.discountAmount | currency: o.currency }}</span></p>
+          </div>
+        }
+        <div class="mt-4 flex justify-between border-t border-white/10 pt-4 text-lg font-semibold text-white">
+          <span>Total</span><span>{{ o.totalAmount | currency: o.currency }}</span>
+        </div>
+      </div>
+
+      @if (o.status === 'PENDING_PAYMENT') {
+        @if (secondsLeft() > 0) {
+          <p class="mt-4 text-center text-sm text-zinc-400">
+            Tus entradas estan reservadas durante <span class="font-mono font-semibold text-fuchsia-300">{{ countdown() }}</span>
+          </p>
+
+          @if (confirmingStripe()) {
+            <div class="mt-6 flex items-center gap-3 rounded-2xl border border-white/10 bg-zinc-950 p-6 text-sm text-zinc-300">
+              <span class="h-5 w-5 animate-spin rounded-full border-2 border-zinc-700 border-t-fuchsia-400"></span>
+              Confirmando tu pago con Stripe...
+            </div>
+          }
+
+          @if (methods()?.stripe) {
+            <div class="mt-6 rounded-2xl border border-white/10 bg-zinc-950 p-6">
+              <p class="text-sm font-semibold text-white">Pago con tarjeta</p>
+              <p class="mt-1 text-sm text-zinc-400">
+                Te llevaremos a la pagina segura de Stripe (modo de prueba). Bloop nunca ve los datos de tu tarjeta.
+              </p>
+              <button type="button" class="mt-5 w-full rounded-xl bg-gradient-to-r from-brand-600 to-accent-600 py-3 font-semibold text-white disabled:opacity-40"
+                      [disabled]="processing() || confirmingStripe()" (click)="payWithStripe()">
+                {{ processing() ? 'Abriendo Stripe...' : 'Pagar ' + (o.totalAmount | currency: o.currency) + ' con tarjeta' }}
+              </button>
+            </div>
+          }
+
+          @if (methods() && !methods()!.stripe && !methods()!.simulated) {
+            <p class="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+              No hay ningun medio de pago configurado en este entorno.
+            </p>
+          }
+
+          @if (methods()?.simulated) {
+          <div class="mt-6 rounded-2xl border border-dashed border-amber-400/40 bg-amber-400/5 p-6">
+            <p class="text-sm font-semibold text-amber-300">Pasarela de pago simulada · entorno de desarrollo</p>
+            <p class="mt-1 text-sm text-zinc-400">
+              No se pide ni se guarda ningun dato de tarjeta. Elige el resultado del pago para probar ambos casos.
+            </p>
+            <div class="mt-5 flex flex-col gap-3 sm:flex-row">
+              <button type="button" class="flex-1 rounded-xl bg-gradient-to-r from-brand-600 to-accent-600 py-3 font-semibold text-white disabled:opacity-40"
+                      [disabled]="processing()" (click)="pay(true)">
+                {{ processing() ? 'Procesando...' : 'Pagar ' + (o.totalAmount | currency: o.currency) }}
+              </button>
+              <button type="button" class="vf-btn-secondary py-3" [disabled]="processing()" (click)="pay(false)">Simular pago rechazado</button>
+            </div>
+          </div>
+          }
+          <button type="button" class="mt-4 w-full text-center text-sm text-zinc-500 hover:text-zinc-300" [disabled]="processing()" (click)="cancel()">
+            Cancelar pedido y liberar las entradas
+          </button>
+        } @else {
+          <p class="mt-6 rounded-xl border border-white/10 p-6 text-center text-zinc-300">
+            El tiempo de reserva ha terminado. <a [routerLink]="['/eventos', o.eventSlug]" class="vf-link">Vuelve a seleccionar tus entradas</a>.
+          </p>
+        }
+      } @else {
+        <p class="mt-6 rounded-xl border border-white/10 p-6 text-center text-zinc-300">
+          Este pedido ya no admite pagos. <a [routerLink]="['/eventos', o.eventSlug]" class="vf-link">Volver al evento</a>
+        </p>
+      }
+    }
+
+    @if (message(); as m) {
+      <p class="mt-6 rounded-lg border px-4 py-3 text-sm"
+         [class]="m.ok ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-red-500/30 bg-red-500/10 text-red-300'">
+        {{ m.text }}
+      </p>
+    }
+  } @else {
+    <p class="text-center text-zinc-400">{{ message()?.text ?? 'Pedido no encontrado' }}</p>
+  }
+</section>

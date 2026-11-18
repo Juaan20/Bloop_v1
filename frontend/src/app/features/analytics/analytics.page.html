@@ -1,0 +1,273 @@
+<vf-page-header title="Analitica e informes" subtitle="Entradas, TPV, reembolsos y promotores con datos reales">
+  <div class="flex flex-wrap gap-1">
+    <button type="button" class="vf-btn-secondary vf-btn-sm" (click)="applyPreset(7)">7 dias</button>
+    <button type="button" class="vf-btn-secondary vf-btn-sm" (click)="applyPreset(30)">30 dias</button>
+    <button type="button" class="vf-btn-secondary vf-btn-sm" (click)="applyPreset(90)">90 dias</button>
+  </div>
+</vf-page-header>
+
+<div class="mb-6 inline-flex h-9 items-center rounded-lg border border-zinc-800 bg-zinc-900/60 p-0.5" role="tablist" aria-label="Vista">
+  <button type="button" role="tab" class="h-full cursor-pointer rounded-md px-3 text-xs font-medium transition" [attr.aria-selected]="tab() === 'summary'"
+          [class]="tab() === 'summary' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white'" (click)="tab.set('summary')">Resumen del periodo</button>
+  <button type="button" role="tab" class="h-full cursor-pointer rounded-md px-3 text-xs font-medium transition" [attr.aria-selected]="tab() === 'forecast'"
+          [class]="tab() === 'forecast' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white'" (click)="tab.set('forecast')">Prevision y comparativas</button>
+</div>
+
+@if (tab() === 'forecast') {
+  <vf-forecast-panel />
+} @else {
+<!-- Filtros -->
+<form class="vf-card mb-6 flex flex-wrap items-end gap-4" (ngSubmit)="load()">
+  <div>
+    <label class="vf-label" for="from">Desde</label>
+    <input id="from" name="from" type="date" class="vf-input" [max]="today" [(ngModel)]="filters.from" />
+  </div>
+  <div>
+    <label class="vf-label" for="to">Hasta</label>
+    <input id="to" name="to" type="date" class="vf-input" [max]="today" [(ngModel)]="filters.to" />
+  </div>
+  <div>
+    <label class="vf-label" for="venue">Local</label>
+    <select id="venue" name="venue" class="vf-input" [(ngModel)]="filters.venueId">
+      <option value="">Todos los locales</option>
+      @for (v of venues(); track v.id) {
+        <option [value]="v.id">{{ v.name }}</option>
+      }
+    </select>
+  </div>
+  <button type="submit" class="vf-btn-primary">Aplicar</button>
+</form>
+
+@if (error()) {
+  <p class="vf-card mb-6 text-red-400">{{ error() }}</p>
+}
+
+@if (loading() && !data()) {
+  <vf-spinner />
+} @else if (data(); as d) {
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="vf-card">
+      <p class="flex items-center justify-between gap-2 text-xs font-medium text-zinc-400">Facturacion total <ng-container *ngTemplateOutlet="chip; context: { $implicit: trends().total }" /></p>
+      <p class="mt-2 font-display text-[28px] font-semibold tracking-tight tabular-nums text-white">{{ d.summary.totalRevenue | currency: 'EUR' }}</p>
+      <p class="mt-1 text-xs text-zinc-500">Entradas + TPV</p>
+    </div>
+    <div class="vf-card">
+      <p class="flex items-center justify-between gap-2 text-xs font-medium text-zinc-400">Entradas <ng-container *ngTemplateOutlet="chip; context: { $implicit: trends().tickets }" /></p>
+      <p class="mt-2 font-display text-[28px] font-semibold tracking-tight tabular-nums text-white">{{ d.summary.ticketRevenue | currency: 'EUR' }}</p>
+      <p class="mt-1 text-xs text-zinc-500">{{ d.summary.ticketsSold | number }} entradas · {{ d.summary.paidOrders | number }} pedidos</p>
+    </div>
+    <div class="vf-card">
+      <p class="flex items-center justify-between gap-2 text-xs font-medium text-zinc-400">TPV <ng-container *ngTemplateOutlet="chip; context: { $implicit: trends().pos }" /></p>
+      <p class="mt-2 font-display text-[28px] font-semibold tracking-tight tabular-nums text-white">{{ d.summary.posRevenue | currency: 'EUR' }}</p>
+      <p class="mt-1 text-xs text-zinc-500">{{ d.summary.posSales | number }} ventas · ticket medio {{ d.summary.posAverageTicket | currency: 'EUR' }}</p>
+    </div>
+    <div class="vf-card">
+      <p class="text-xs font-medium text-zinc-400">Reembolsos</p>
+      <p class="mt-2 font-display text-[28px] font-semibold tracking-tight tabular-nums" [class]="d.summary.refundedAmount > 0 ? 'text-amber-300' : 'text-white'">
+        {{ d.summary.refundedAmount | currency: 'EUR' }}
+      </p>
+      <p class="mt-1 text-xs text-zinc-500">{{ d.summary.refundedOrders }} pedidos · {{ d.summary.voidedPosSales }} ventas TPV anuladas</p>
+    </div>
+  </div>
+
+  <!-- Ocupacion y VIP -->
+  <div class="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="vf-card">
+      <p class="text-xs font-medium text-zinc-400">Ocupacion</p>
+      <p class="mt-2 font-display text-[28px] font-semibold tracking-tight text-white tabular-nums">{{ ratio(d.occupancy.ticketsSold, d.occupancy.capacity) | percent: '1.0-0' }}</p>
+      <div class="mt-2 h-1 rounded-full bg-zinc-800"><div class="h-1 rounded-full bg-accent-400" [style.width.%]="ratio(d.occupancy.ticketsSold, d.occupancy.capacity) * 100"></div></div>
+      <p class="mt-1.5 text-xs text-zinc-500">{{ d.occupancy.ticketsSold | number }} de {{ d.occupancy.capacity | number }} plazas · {{ d.occupancy.sessions }} sesiones</p>
+    </div>
+    <div class="vf-card">
+      <p class="text-xs font-medium text-zinc-400">Asistencia real</p>
+      <p class="mt-2 font-display text-[28px] font-semibold tracking-tight text-white tabular-nums">{{ d.occupancy.checkedIn | number }}</p>
+      <p class="mt-1 text-xs text-zinc-500">{{ ratio(d.occupancy.checkedIn, d.occupancy.ticketsSold) | percent: '1.0-0' }} de las entradas vendidas se usaron</p>
+    </div>
+    <div class="vf-card">
+      <p class="flex items-center justify-between gap-2 text-xs font-medium text-zinc-400">Reservas VIP <ng-container *ngTemplateOutlet="chip; context: { $implicit: trends().vip }" /></p>
+      <p class="mt-2 font-display text-[28px] font-semibold tracking-tight text-white tabular-nums">{{ d.vip.reservations | number }}</p>
+      <p class="mt-1 text-xs text-zinc-500">{{ d.vip.seatedOrCompleted }} ocupadas · {{ d.vip.noShows }} no vinieron · {{ d.vip.cancelled }} canceladas</p>
+    </div>
+    <div class="vf-card">
+      <p class="text-xs font-medium text-zinc-400">Botellas VIP</p>
+      <p class="mt-2 font-display text-[28px] font-semibold tracking-tight text-white tabular-nums">{{ d.vip.bottlesSold | number }}</p>
+      <p class="mt-1 text-xs text-zinc-500">Reservas {{ d.vip.prepaidRevenue | currency: 'EUR' : 'symbol' : '1.0-0' }} · adicionales {{ d.vip.extrasRevenue | currency: 'EUR' : 'symbol' : '1.0-0' }}</p>
+    </div>
+  </div>
+  @if (previous()) {
+    <p class="mt-2 text-xs text-zinc-500">Las variaciones comparan con el periodo anterior de la misma duracion ({{ previousRangeLabel() }}).</p>
+  }
+
+  <!-- Facturacion diaria -->
+  <div class="vf-card mt-6">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h2 class="font-display font-semibold text-white">Facturacion por dia</h2>
+      <div class="flex gap-4 text-xs text-zinc-400">
+        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm bg-brand-500"></span>Entradas</span>
+        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm bg-cyan-400"></span>TPV</span>
+      </div>
+    </div>
+    @if (dayBars().length === 0) {
+      <p class="py-12 text-center text-sm text-zinc-500">No hay ventas en este periodo.</p>
+    } @else {
+      <div class="mt-6 flex h-52 items-end gap-1">
+        @for (b of dayBars(); track b.day) {
+          <div class="group relative flex h-full flex-1 flex-col justify-end">
+            <div class="w-full rounded-t-sm bg-accent-400/90 transition-opacity group-hover:opacity-80" [style.height.%]="b.posHeight"></div>
+            <div class="w-full bg-brand-500" [class.rounded-t-sm]="b.posHeight === 0" [style.height.%]="b.ticketHeight"></div>
+            <div class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 rounded-lg border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-xs whitespace-nowrap shadow-(--shadow-pop) group-hover:block">
+              <p class="text-zinc-400">{{ b.day | date: 'EEE d MMM' }}</p>
+              <p class="font-medium text-white tabular-nums">{{ b.total | currency: 'EUR' }}</p>
+              <p class="text-zinc-400 tabular-nums"><span class="text-brand-300">■</span> {{ b.ticketRevenue | currency: 'EUR' }} · <span class="text-accent-400">■</span> {{ b.posRevenue | currency: 'EUR' }}</p>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="mt-2 flex justify-between text-xs text-zinc-500">
+        <span>{{ dayBars()[0].day | date: 'd MMM' }}</span><span>{{ dayBars()[dayBars().length - 1].day | date: 'd MMM' }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-2">
+    <!-- Eventos -->
+    <div class="vf-card p-0">
+      <h2 class="px-5 pt-5 font-display font-semibold text-white">Eventos con mas ventas</h2>
+      @if (d.topEvents.length === 0) {
+        <p class="p-5 text-sm text-zinc-500">Sin ventas de entradas en el periodo.</p>
+      } @else {
+        <table class="vf-table mt-3">
+          <thead><tr><th>Evento</th><th class="text-right">Entradas</th><th>Asistencia</th><th class="text-right">Ingresos</th></tr></thead>
+          <tbody>
+            @for (e of d.topEvents; track e.eventId) {
+              <tr>
+                <td><p class="font-medium text-white">{{ e.eventName }}</p><p class="text-xs text-zinc-500">{{ e.venueName }}</p></td>
+                <td class="text-right text-zinc-300">{{ e.ticketsSold }}</td>
+                <td class="text-zinc-300">{{ ratio(e.checkedIn, e.ticketsSold) | percent: '1.0-0' }}</td>
+                <td class="text-right font-medium text-white">{{ e.revenue | currency: 'EUR' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <!-- Productos -->
+    <div class="vf-card p-0">
+      <h2 class="px-5 pt-5 font-display font-semibold text-white">Productos mas vendidos (TPV)</h2>
+      @if (d.topProducts.length === 0) {
+        <p class="p-5 text-sm text-zinc-500">Sin ventas del TPV en el periodo.</p>
+      } @else {
+        <table class="vf-table mt-3">
+          <thead><tr><th>Producto</th><th class="text-right">Unidades</th><th class="text-right">Importe</th></tr></thead>
+          <tbody>
+            @for (p of d.topProducts; track p.productName + p.variantName) {
+              <tr>
+                <td class="text-zinc-200">{{ p.productName }} <span class="text-zinc-500">· {{ p.variantName }}</span></td>
+                <td class="text-right text-zinc-300">{{ p.quantity }}</td>
+                <td class="text-right font-medium text-white">{{ p.revenue | currency: 'EUR' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <!-- Rendimiento del TPV -->
+    <div class="vf-card">
+      <h2 class="font-display font-semibold text-white">Rendimiento del TPV</h2>
+      @if (d.posByTerminal.length === 0) {
+        <p class="mt-3 text-sm text-zinc-500">Sin ventas del TPV en el periodo.</p>
+      } @else {
+        <ul class="mt-4 space-y-3">
+          @for (t of d.posByTerminal; track t.terminalId) {
+            <li>
+              <div class="flex justify-between text-sm"><span class="text-zinc-300">{{ t.terminalName }} <span class="text-zinc-500">· {{ t.venueName }}</span></span><span class="text-white">{{ t.revenue | currency: 'EUR' }}</span></div>
+              <div class="mt-1.5 h-1.5 rounded-full bg-zinc-800"><div class="h-1.5 rounded-full bg-cyan-400" [style.width.%]="ratio(t.revenue, d.summary.posRevenue) * 100"></div></div>
+              <p class="mt-1 text-xs text-zinc-500">{{ t.sales }} ventas</p>
+            </li>
+          }
+        </ul>
+        <div class="mt-5 flex gap-6 border-t border-zinc-800 pt-4 text-sm">
+          @for (m of d.posByPaymentMethod; track m.paymentMethod) {
+            <div><p class="text-xs text-zinc-500">{{ m.paymentMethod === 'CASH' ? 'Efectivo' : 'Tarjeta' }}</p><p class="text-white">{{ m.revenue | currency: 'EUR' }}</p><p class="text-xs text-zinc-500">{{ m.sales }} ventas</p></div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Por hora -->
+    <div class="vf-card">
+      <h2 class="font-display font-semibold text-white">Ventas de barra por hora</h2>
+      <p class="mt-1 text-xs text-zinc-500">Ayuda a planificar el personal de barra en las horas punta.</p>
+      <div class="mt-4 flex h-32 items-end gap-0.5">
+        @for (h of hourBars(); track h.hour) {
+          <div class="group relative flex h-full flex-1 items-end">
+            <div class="w-full rounded-t-sm bg-cyan-400/80" [style.height.%]="h.height"></div>
+            @if (h.sales > 0) {
+              <div class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 rounded bg-zinc-800 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block">
+                {{ h.hour }}:00 · {{ h.sales }} ventas · {{ h.revenue | currency: 'EUR' }}
+              </div>
+            }
+          </div>
+        }
+      </div>
+      <div class="mt-1 flex justify-between text-[10px] text-zinc-500"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>23 h</span></div>
+    </div>
+  </div>
+
+  <!-- Promotores -->
+  <div class="vf-card mt-6 p-0">
+    <div class="flex items-center justify-between px-5 pt-5">
+      <h2 class="font-display font-semibold text-white">Rendimiento de promotores</h2>
+      <span class="text-sm text-zinc-400">Comisiones: {{ d.summary.promoterCommissions | currency: 'EUR' }}</span>
+    </div>
+    @if (d.promoters.length === 0) {
+      <p class="p-5 text-sm text-zinc-500">Ningun promotor ha vendido en el periodo.</p>
+    } @else {
+      <table class="vf-table mt-3">
+        <thead><tr><th>Promotor</th><th>Codigo</th><th class="text-right">Pedidos</th><th class="text-right">Entradas</th><th class="text-right">Ventas</th><th class="text-right">Comision</th></tr></thead>
+        <tbody>
+          @for (p of d.promoters; track p.promoterId) {
+            <tr>
+              <td class="text-zinc-200">{{ p.promoterName }}</td>
+              <td class="font-mono text-xs text-zinc-400">{{ p.referralCode }}</td>
+              <td class="text-right text-zinc-300">{{ p.orders }}</td>
+              <td class="text-right text-zinc-300">{{ p.tickets }}</td>
+              <td class="text-right text-white">{{ p.revenue | currency: 'EUR' }}</td>
+              <td class="text-right text-zinc-300">{{ p.commission | currency: 'EUR' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+  <!-- Informes -->
+  <div class="vf-card mt-6">
+    <h2 class="font-display font-semibold text-white">Informes descargables (CSV)</h2>
+    <p class="mt-1 text-sm text-zinc-500">
+      Del {{ filters.from | date: 'd MMM yyyy' }} al {{ filters.to | date: 'd MMM yyyy' }}. Se abren con Excel o LibreOffice.
+      Contienen datos personales: la descarga queda registrada en la auditoria.
+    </p>
+    <div class="mt-4 flex flex-wrap gap-3">
+      @for (r of reports; track r.type) {
+        <button type="button" class="vf-btn-secondary" [disabled]="downloading() !== null" (click)="download(r.type)">
+          {{ downloading() === r.type ? 'Generando...' : '⬇ ' + r.label }}
+        </button>
+      }
+    </div>
+  </div>
+}
+
+}
+
+<!-- Chip de variacion frente al periodo anterior (flecha + signo, no solo color) -->
+<ng-template #chip let-t>
+  @if (t) {
+    <span class="vf-badge tabular-nums" [class]="t.direction === 'up' ? 'bg-emerald-500/10 text-emerald-300 ring-emerald-500/20' : t.direction === 'down' ? 'bg-red-500/10 text-red-300 ring-red-500/20' : 'bg-zinc-500/10 text-zinc-300 ring-zinc-500/20'">
+      {{ t.direction === 'up' ? '▲' : t.direction === 'down' ? '▼' : '=' }} {{ absPct(t.change) | number: '1.0-1' }} %
+    </span>
+  }
+</ng-template>

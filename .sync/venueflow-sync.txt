@@ -1,0 +1,4 @@
+# Registro de sincronizaciones VENUEFLOW -> BLOOP_V2 (solo manuales, unidireccionales).
+# Cada linea: fecha | rama de VENUEFLOW | commit de VENUEFLOW copiado | nota
+# La siguiente sincronizacion compara VENUEFLOW desde el ULTIMO commit de esta lista.
+2026-11-18 | bloop | 286853a9729cbff4a8c1f0892928b6d34e8ae36b | copia inicial (git archive, sin docs/ ni README)

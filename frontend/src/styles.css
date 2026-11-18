@@ -1,0 +1,223 @@
+/*
+ * Sistema de diseno de Bloop (Tailwind CSS v4).
+ * - @theme define los tokens: colores, fuentes, radios y sombras. Generan clases como bg-brand-500.
+ *   La escala "zinc" se redefine con neutros azul-negro: asi TODAS las pantallas heredan la nueva paleta
+ *   sin tocar cada plantilla. "brand" es el violeta/indigo principal y "accent" el azul frio.
+ * - @utility define componentes reutilizables (vf-btn-primary, vf-card, vf-badge...).
+ * Guia rapida en CLAUDE.md (seccion Frontend).
+ */
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-display: "Geist", "Inter", "Segoe UI Variable", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+
+  /* Neutros azul-negro (fondo, superficies, bordes y texto). */
+  --color-zinc-50: #f5f6fa;
+  --color-zinc-100: #e9ebf2;
+  --color-zinc-200: #d3d7e3;
+  --color-zinc-300: #b1b7c9;
+  --color-zinc-400: #8b92a8;
+  --color-zinc-500: #666d84;
+  --color-zinc-600: #484e63;
+  --color-zinc-700: #30354a;
+  --color-zinc-800: #1f2335;
+  --color-zinc-900: #131624;
+  --color-zinc-950: #090b13;
+
+  /* Primario violeta-indigo. */
+  --color-brand-200: #d6d3ff;
+  --color-brand-300: #b8b2ff;
+  --color-brand-400: #9a8fff;
+  --color-brand-500: #7c6cf8;
+  --color-brand-600: #6753e8;
+  --color-brand-700: #5642c7;
+  --color-brand-800: #43349a;
+
+  /* Acento azul frio. */
+  --color-accent-300: #8fd0ff;
+  --color-accent-400: #5cb6ff;
+  --color-accent-500: #359af2;
+  --color-accent-600: #1f7fd6;
+
+  /* Los antiguos fucsia/cian se alinean con la nueva paleta. */
+  --color-fuchsia-300: #c9b8ff;
+  --color-fuchsia-400: #a98cff;
+  --color-fuchsia-500: #8f6bff;
+  --color-cyan-300: var(--color-accent-300);
+  --color-cyan-400: var(--color-accent-400);
+  --color-neon: #b8b2ff;
+  --color-glow: #5cb6ff;
+
+  --radius-card: 0.875rem;
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.03) inset, 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-pop: 0 0 0 1px rgb(255 255 255 / 0.06), 0 16px 40px -12px rgb(0 0 0 / 0.7);
+  --shadow-glow: 0 0 0 1px rgb(124 108 248 / 0.5), 0 8px 24px -8px rgb(124 108 248 / 0.55);
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-fade-in: fade-in 0.18s ease-out backwards;
+  --animate-pop-in: pop-in 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2) backwards;
+
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+  /* Solo opacidad: un transform en <main> haria que los modales (position: fixed) se colocaran
+     respecto a la pagina y no respecto a la pantalla. */
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-zinc-950 font-sans text-zinc-100 antialiased;
+  font-feature-settings: "cv11", "ss01";
+}
+
+::selection {
+  @apply bg-brand-500/35 text-white;
+}
+
+/* Foco visible y coherente en toda la app (teclado). */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-brand-400;
+}
+
+/* Barras de scroll discretas. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-zinc-700) transparent;
+}
+
+/* Accesibilidad: sin animaciones si el usuario lo pide al sistema. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Botones ---------- */
+@utility vf-btn {
+  @apply inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-lg px-3.5 py-1.5 text-sm font-medium
+    whitespace-nowrap transition duration-150 select-none active:scale-[0.98]
+    focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400
+    disabled:pointer-events-none disabled:opacity-50;
+}
+@utility vf-btn-primary {
+  @apply vf-btn bg-brand-600 text-white shadow-[0_1px_0_0_rgb(255_255_255/0.15)_inset,0_1px_2px_0_rgb(0_0_0/0.4)]
+    hover:bg-brand-500;
+}
+@utility vf-btn-secondary {
+  @apply vf-btn border border-zinc-700/80 bg-zinc-900 text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800;
+}
+@utility vf-btn-danger {
+  @apply vf-btn border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200;
+}
+@utility vf-btn-ghost {
+  @apply vf-btn text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100;
+}
+@utility vf-btn-sm {
+  @apply min-h-8 px-2.5 py-1 text-xs;
+}
+@utility vf-btn-icon {
+  @apply vf-btn size-9 min-h-0 p-0 text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100;
+}
+
+/* ---------- Superficies ---------- */
+@utility vf-card {
+  @apply rounded-(--radius-card) border border-zinc-800 bg-zinc-900/60 p-5 shadow-(--shadow-card);
+}
+@utility vf-panel {
+  @apply rounded-(--radius-card) border border-zinc-800 bg-zinc-900/60 shadow-(--shadow-card);
+}
+
+/* ---------- Formularios ---------- */
+@utility vf-label {
+  @apply mb-1.5 block text-xs font-medium text-zinc-400;
+}
+@utility vf-input {
+  @apply w-full rounded-lg border border-zinc-700/80 bg-zinc-950/60 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500
+    transition duration-150 hover:border-zinc-600
+    focus:border-brand-500 focus:ring-3 focus:ring-brand-500/20 focus:outline-none
+    disabled:cursor-not-allowed disabled:opacity-60;
+}
+@utility vf-link {
+  @apply cursor-pointer text-brand-300 underline-offset-4 transition hover:text-brand-200 hover:underline;
+}
+
+/* ---------- Etiquetas, atajos y carga ---------- */
+@utility vf-badge {
+  @apply inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium ring-1 ring-inset;
+}
+@utility vf-kbd {
+  @apply rounded border border-zinc-700 bg-zinc-800 px-1.5 font-mono text-[10px] text-zinc-400;
+}
+@utility vf-skeleton {
+  @apply animate-shimmer rounded-md bg-[linear-gradient(90deg,var(--color-zinc-800)_25%,var(--color-zinc-700)_50%,var(--color-zinc-800)_75%)]
+    bg-size-[200%_100%];
+}
+
+/* Campo invalido tras tocarlo (clases que anade Angular Reactive Forms). */
+.ng-invalid.ng-touched.vf-input,
+.ng-invalid.ng-touched .vf-input {
+  @apply border-red-500/60 focus:ring-red-500/20;
+}
+
+select.vf-input {
+  @apply cursor-pointer;
+}
+
+/* ---------- Tablas ---------- */
+.vf-table {
+  @apply w-full text-left text-sm;
+}
+.vf-table th {
+  @apply border-b border-zinc-800 bg-zinc-900/40 px-4 py-2.5 text-xs font-medium whitespace-nowrap text-zinc-500;
+}
+.vf-table td {
+  @apply border-b border-zinc-800/60 px-4 py-3 text-zinc-300;
+}
+.vf-table tbody tr {
+  @apply transition-colors duration-100 hover:bg-zinc-800/30;
+}
+.vf-table tbody tr:last-child td {
+  @apply border-b-0;
+}
+
+/* Campo de busqueda con lupa (icono SVG en el fondo, sin librerias). */
+@utility vf-input-search {
+  @apply vf-input pl-9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666d84' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0.75rem center;
+  background-size: 1rem;
+}
+
+/* Botones Guardar/Cancelar de un formulario dentro de un modal: siempre visibles abajo aunque el
+   formulario sea largo (el cuerpo del modal tiene scroll propio). */
+.vf-modal-body .vf-modal-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin-inline: -1.25rem;
+  margin-bottom: -1.25rem;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--color-zinc-800);
+  background: var(--color-zinc-900);
+}

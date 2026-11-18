@@ -1,0 +1,10 @@
+# Finales de linea: scripts de Windows en CRLF, scripts de Unix en LF
+* text=auto
+*.bat text eol=crlf
+*.cmd text eol=crlf
+mvnw text eol=lf
+*.sh text eol=lf
+*.pdf binary
+*.ico binary
+*.png binary
+*.jar binary

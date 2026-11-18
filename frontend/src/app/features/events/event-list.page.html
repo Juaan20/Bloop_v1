@@ -1,0 +1,73 @@
+<vf-page-header title="Eventos" subtitle="Crea, configura y publica tus eventos">
+  @if (canManage) {
+    <a routerLink="/admin/eventos/nuevo" class="vf-btn-primary"><vf-icon name="plus" class="size-4" /> Nuevo evento</a>
+  }
+</vf-page-header>
+
+<form class="mb-5 flex flex-wrap items-center gap-2" (ngSubmit)="search()">
+  <input name="search" type="search" class="vf-input-search max-w-xs" placeholder="Buscar por nombre" [(ngModel)]="filters.search" />
+  <select name="status" class="vf-input w-auto" [(ngModel)]="filters.status" (change)="search()">
+    <option value="">Todos los estados</option>
+    <option value="DRAFT">Borrador</option>
+    <option value="PUBLISHED">Publicado</option>
+    <option value="CANCELLED">Cancelado</option>
+  </select>
+  <select name="venue" class="vf-input w-auto" [(ngModel)]="filters.venueId" (change)="search()">
+    <option value="">Todos los locales</option>
+    @for (v of venues(); track v.id) {
+      <option [value]="v.id">{{ v.name }}</option>
+    }
+  </select>
+  <button type="submit" class="vf-btn-secondary">Filtrar</button>
+</form>
+
+@if (loading() && !result()) {
+  <vf-spinner />
+} @else if (error()) {
+  <p class="vf-card text-red-400">{{ error() }}</p>
+} @else if (result(); as page) {
+  @if (page.content.length === 0) {
+    <vf-empty-state title="No hay eventos" description="Crea un evento, configura sus entradas y publicalo para venderlo en la web." icon="ticket">
+      @if (canManage) {
+        <a routerLink="/admin/eventos/nuevo" class="vf-btn-primary">Crear evento</a>
+      }
+    </vf-empty-state>
+  } @else {
+    <div class="vf-panel overflow-x-auto">
+      <table class="vf-table">
+        <thead>
+          <tr><th>Evento</th><th>Local</th><th>Proxima fecha</th><th class="w-44">Entradas vendidas</th><th>Estado</th><th><span class="sr-only">Acciones</span></th></tr>
+        </thead>
+        <tbody>
+          @for (e of page.content; track e.id) {
+            <tr class="group">
+              <td>
+                <a [routerLink]="['/admin/eventos', e.id]" class="flex items-center gap-3">
+                  <span class="size-10 shrink-0 rounded-lg ring-1 ring-white/10" [style.background]="art(e.name)" aria-hidden="true"></span>
+                  <span class="min-w-0">
+                    <span class="block truncate font-medium text-white group-hover:underline">{{ e.name }}</span>
+                    <span class="block text-xs text-zinc-500">{{ e.sessionsCount }} {{ e.sessionsCount === 1 ? 'sesion' : 'sesiones' }}</span>
+                  </span>
+                </a>
+              </td>
+              <td>{{ e.venueName }}</td>
+              <td class="whitespace-nowrap">{{ e.nextSessionAt ? (e.nextSessionAt | date: 'EEE d MMM, HH:mm') : '—' }}</td>
+              <td>
+                <div class="flex items-center justify-between text-xs tabular-nums"><span class="text-zinc-200">{{ e.ticketsSold | number }}</span><span class="text-zinc-500">de {{ e.ticketsConfigured | number }}</span></div>
+                <div class="mt-1.5 h-1 rounded-full bg-zinc-800"><div class="h-1 rounded-full bg-accent-400" [style.width.%]="e.ticketsConfigured > 0 ? (e.ticketsSold / e.ticketsConfigured) * 100 : 0"></div></div>
+              </td>
+              <td><vf-status-badge [status]="e.status" /></td>
+              <td class="text-right whitespace-nowrap">
+                @if (e.status === 'PUBLISHED') {
+                  <a [href]="'/eventos/' + e.slug" target="_blank" rel="noopener" class="vf-btn-icon size-8" aria-label="Ver en la web publica" title="Ver en la web publica"><vf-icon name="external" class="size-4" /></a>
+                }
+                <a [routerLink]="['/admin/eventos', e.id]" class="vf-btn-icon size-8" [attr.aria-label]="'Abrir ' + e.name" title="Abrir"><vf-icon name="chevron-right" class="size-4" /></a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <vf-pagination [page]="page" (pageChange)="goToPage($event)" />
+  }
+}

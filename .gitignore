@@ -1,0 +1,35 @@
+# Secretos y configuracion local (nunca se suben: usa .env.example como plantilla)
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Backend
+backend/target/
+backend/.local-db/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# IDE y sistema
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+*.log
+
+# Configuracion local de Claude Code (rutas de esta maquina)
+.claude/
+
+# Ficheros temporales de herramientas de navegador
+.playwright-mcp/
+
+# Despliegue (enlace local con Vercel)
+.vercel/
+frontend/.vercel/

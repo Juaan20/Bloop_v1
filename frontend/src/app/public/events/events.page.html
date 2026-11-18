@@ -1,0 +1,42 @@
+<section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+  <h1 class="font-display text-4xl font-bold text-white">Eventos</h1>
+
+  <form class="mt-6 flex flex-col gap-3 sm:flex-row" (ngSubmit)="applyFilters()">
+    <input name="search" [(ngModel)]="search" placeholder="Evento o local"
+           class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-zinc-500 focus:border-fuchsia-400 focus:outline-none" />
+    <select name="city" [(ngModel)]="city" (change)="applyFilters()"
+            class="rounded-xl border border-white/10 bg-zinc-950 px-4 py-3 text-white focus:border-fuchsia-400 focus:outline-none">
+      <option value="">Todas las ciudades</option>
+      @for (c of cities(); track c) {
+        <option [value]="c">{{ c }}</option>
+      }
+    </select>
+    <button type="submit" class="rounded-xl bg-white px-6 py-3 font-semibold text-black hover:bg-zinc-200">Buscar</button>
+  </form>
+
+  <div class="mt-10">
+    @if (loading()) {
+      <vf-spinner label="Buscando eventos..." />
+    } @else if (error()) {
+      <p class="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">{{ error() }}</p>
+    } @else if (result(); as page) {
+      @if (page.content.length === 0) {
+        <p class="rounded-xl border border-white/10 p-10 text-center text-zinc-400">No hay eventos que coincidan con tu busqueda.</p>
+      } @else {
+        <p class="mb-4 text-sm text-zinc-500">{{ page.totalElements }} {{ page.totalElements === 1 ? 'fecha' : 'fechas' }} disponibles</p>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          @for (event of page.content; track event.sessionId) {
+            <vf-event-card [event]="event" />
+          }
+        </div>
+        @if (page.totalPages > 1) {
+          <div class="mt-10 flex items-center justify-center gap-3">
+            <button type="button" class="vf-btn-secondary" [disabled]="page.page === 0" (click)="goToPage(page.page - 1)">← Anterior</button>
+            <span class="text-sm text-zinc-400">Pagina {{ page.page + 1 }} de {{ page.totalPages }}</span>
+            <button type="button" class="vf-btn-secondary" [disabled]="page.page + 1 >= page.totalPages" (click)="goToPage(page.page + 1)">Siguiente →</button>
+          </div>
+        }
+      }
+    }
+  </div>
+</section>

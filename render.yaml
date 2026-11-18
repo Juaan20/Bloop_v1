@@ -1,0 +1,76 @@
+# Blueprint de Render: backend Spring Boot de Bloop construido con backend/Dockerfile.
+# Render > New > Blueprint > elegir este repositorio. Las variables con "sync: false" se rellenan
+# a mano en el panel de Render (nunca en este fichero). JWT_SECRET y QR_SECRET las genera Render.
+services:
+  - type: web
+    name: bloop-backend
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      # --- Perfil y servidor ---
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SERVER_PORT
+        value: "10000"
+      - key: PORT
+        value: "10000"
+      # El plan gratuito tiene 512 MB: limita la memoria de la JVM.
+      - key: JAVA_TOOL_OPTIONS
+        value: "-XX:MaxRAMPercentage=75 -XX:+UseSerialGC -Xss512k"
+      # --- Base de datos (Neon u otro PostgreSQL 17). Ej.: jdbc:postgresql://HOST/neondb?sslmode=require
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      # --- Seguridad (minimo 32 caracteres; Render las genera al crear el servicio) ---
+      - key: JWT_SECRET
+        generateValue: true
+      - key: QR_SECRET
+        generateValue: true
+      # --- URL publica del frontend (Vercel): enlaces de los correos y origen permitido ---
+      - key: PUBLIC_URL
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      # --- Correo SMTP ---
+      - key: MAIL_ENABLED
+        value: "true"
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_SMTP_AUTH
+        value: "true"
+      - key: MAIL_STARTTLS_ENABLE
+        value: "true"
+      - key: MAIL_FROM
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: Bloop
+      # --- Imagenes: en la nube el disco del servidor se borra en cada despliegue ---
+      - key: MEDIA_PROVIDER
+        value: cloudinary
+      - key: MEDIA_CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: MEDIA_CLOUDINARY_API_KEY
+        sync: false
+      - key: MEDIA_CLOUDINARY_API_SECRET
+        sync: false
+      # --- Stripe en modo test (opcional; sin claves no hay pago online) ---
+      - key: STRIPE_ENABLED
+        value: "false"
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false

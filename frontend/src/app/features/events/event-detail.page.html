@@ -1,0 +1,145 @@
+@if (error()) {
+  <p class="vf-card text-red-400">{{ error() }} <a routerLink="/admin/eventos" class="vf-link">Volver</a></p>
+} @else if (event(); as ev) {
+  <vf-page-header [title]="ev.name" [subtitle]="ev.venueName + ' · aforo del local ' + ev.venueCapacity">
+    <vf-status-badge [status]="ev.status" />
+    @if (ev.status === 'PUBLISHED') {
+      <span class="text-xs text-zinc-500">Publicado en /eventos/{{ ev.slug }}</span>
+    }
+    @if (canManage && ev.status !== 'CANCELLED') {
+      @if (ev.status === 'DRAFT') {
+        <button type="button" class="vf-btn-primary" [disabled]="busy()" (click)="changeStatus('publish')">Publicar</button>
+      } @else {
+        <button type="button" class="vf-btn-secondary" [disabled]="busy()" (click)="changeStatus('unpublish')">Despublicar</button>
+      }
+      <button type="button" class="vf-btn-danger" [disabled]="busy()" (click)="changeStatus('cancel')">Cancelar evento</button>
+    }
+  </vf-page-header>
+
+  <div class="grid gap-6 xl:grid-cols-[1fr_22rem]">
+    <!-- Sesiones y entradas -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="font-display text-lg font-semibold text-white">Sesiones y entradas</h2>
+        @if (canManage && ev.status !== 'CANCELLED') {
+          <button type="button" class="vf-btn-secondary" (click)="openModal({ kind: 'session', session: null })"><vf-icon name="plus" class="size-4" /> Anadir sesion</button>
+        }
+      </div>
+
+      @for (s of ev.sessions; track s.id) {
+        <article class="vf-card p-0">
+          <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-5 py-4">
+            <div class="flex items-center gap-3">
+              @if (s.imageUrl) { <img [src]="s.imageUrl" alt="" class="size-12 shrink-0 rounded-lg object-cover" /> }
+              <div>
+              @if (s.title) { <p class="text-xs font-medium tracking-wide text-brand-300 uppercase">{{ s.title }}</p> }
+              <p class="font-medium text-white">{{ s.startsAt | date: 'EEEE d MMMM yyyy, HH:mm' }} → {{ s.endsAt | date: 'HH:mm' }}
+                @if (s.salesPaused) { <span class="vf-badge ml-1 bg-amber-500/10 text-amber-300 ring-amber-500/20">Venta pausada</span> }</p>
+              <p class="text-xs text-zinc-500">
+                Puertas {{ s.doorsOpenAt ? (s.doorsOpenAt | date: 'HH:mm') : '—' }} · Aforo {{ s.capacity }} ·
+                Configuradas {{ s.ticketsConfigured }} · Vendidas {{ s.ticketsSold }}
+              </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <vf-status-badge [status]="s.status" />
+              @if (canManage && ev.status !== 'CANCELLED' && s.status === 'SCHEDULED') {
+                <button type="button" class="vf-btn-ghost" (click)="openModal({ kind: 'session', session: s })">Editar</button>
+                @if (s.ticketsSold === 0 && ev.sessions.length > 1) {
+                  <button type="button" class="vf-btn-ghost text-red-400" (click)="deleteSession(s)">Eliminar</button>
+                } @else if (s.ticketsSold > 0) {
+                  <button type="button" class="vf-btn-ghost text-red-400" (click)="cancelSession(s)">Cancelar</button>
+                }
+              }
+            </div>
+          </header>
+
+          @if (s.ticketTypes.length === 0) {
+            <p class="px-5 py-6 text-sm text-zinc-500">Sin tipos de entrada. Anade al menos uno para poder publicar.</p>
+          } @else {
+            <div class="overflow-x-auto">
+              <table class="vf-table">
+                <thead>
+                  <tr><th>Entrada</th><th class="text-right">Precio</th><th class="w-48">Disponibilidad</th><th>Periodo de venta</th><th>Estado</th><th><span class="sr-only">Acciones</span></th></tr>
+                </thead>
+                <tbody>
+                  @for (t of s.ticketTypes; track t.id) {
+                    <tr>
+                      <td><p class="font-medium text-white">{{ t.name }}</p><p class="text-xs text-zinc-500">{{ t.category === 'VIP' ? 'Entrada VIP (acceso con QR)' : (t.category | statusLabel) }}</p></td>
+                      <td class="text-right text-zinc-200">{{ t.price | currency: t.currency }}</td>
+                      <td>
+                        <div class="flex justify-between text-xs tabular-nums"><span class="text-zinc-200">{{ t.quantitySold }} vendidas</span><span [class]="t.available === 0 ? 'text-red-300' : t.available <= t.quantityTotal * 0.1 ? 'text-amber-300' : 'text-zinc-500'">{{ t.available }} libres</span></div>
+                        <div class="mt-1.5 h-1.5 rounded-full bg-zinc-800"><div class="h-1.5 rounded-full" [class]="t.available === 0 ? 'bg-red-400' : t.available <= t.quantityTotal * 0.1 ? 'bg-amber-400' : 'bg-accent-400'" [style.width.%]="t.quantityTotal > 0 ? (t.quantitySold / t.quantityTotal) * 100 : 0"></div></div>
+                        <p class="mt-1 text-[11px] text-zinc-500">de {{ t.quantityTotal }} · max. {{ t.maxPerOrder }} por pedido</p>
+                      </td>
+                      <td class="text-xs whitespace-nowrap text-zinc-400">{{ t.salesStartAt ? (t.salesStartAt | date: 'd MMM HH:mm') : 'Ya' }} → {{ t.salesEndAt ? (t.salesEndAt | date: 'd MMM HH:mm') : 'inicio sesion' }}</td>
+                      <td><vf-status-badge [status]="t.saleStatus" /></td>
+                      <td class="text-right whitespace-nowrap">
+                        @if (canManage && ev.status !== 'CANCELLED') {
+                          <button type="button" class="vf-link text-xs" (click)="openModal({ kind: 'ticket', session: s, ticketType: t })">Editar</button>
+                          @if (t.quantitySold === 0) {
+                            <button type="button" class="ml-3 text-xs text-red-400 hover:underline" (click)="deleteTicketType(s, t)">Eliminar</button>
+                          }
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          @if (canManage && ev.status !== 'CANCELLED' && s.status === 'SCHEDULED') {
+            <div class="border-t border-zinc-800 px-5 py-3">
+              <button type="button" class="vf-link text-sm" (click)="openModal({ kind: 'ticket', session: s, ticketType: null })">+ Anadir tipo de entrada</button>
+            </div>
+          }
+        </article>
+      }
+    </section>
+
+    <!-- Datos del evento -->
+    <aside>
+      <form class="vf-card space-y-4" [formGroup]="infoForm" (ngSubmit)="saveInfo()" novalidate>
+        <h2 class="font-display font-semibold text-white">Datos del evento</h2>
+        <div>
+          <label class="vf-label" for="name">Nombre</label>
+          <input id="name" class="vf-input" formControlName="name" />
+          <vf-field-error [control]="infoForm.controls.name" />
+        </div>
+        <div>
+          <label class="vf-label" for="description">Descripcion</label>
+          <textarea id="description" rows="5" class="vf-input" formControlName="description"></textarea>
+        </div>
+        <div>
+          <p class="vf-label">Imagen principal</p>
+          <vf-image-picker formControlName="imageUrl" label="imagen principal" />
+        </div>
+        <div>
+          <label class="vf-label" for="minAge">Edad minima</label>
+          <input id="minAge" type="number" class="vf-input" formControlName="minAge" />
+        </div>
+        @if (canManage && ev.status !== 'CANCELLED') {
+          <button type="submit" class="vf-btn-primary w-full" [disabled]="busy()">Guardar datos</button>
+        }
+        <p class="text-xs text-zinc-500">URL publica: /eventos/{{ ev.slug }}</p>
+      </form>
+    </aside>
+  </div>
+
+  <!-- Modales -->
+  @if (modal(); as m) {
+    <vf-modal [open]="true" [size]="m.kind === 'session' ? 'lg' : 'md'" [title]="m.kind === 'session' ? (m.session ? 'Editar sesion' : 'Nueva sesion') : (m.ticketType ? 'Editar entrada' : 'Nuevo tipo de entrada')"
+              (closed)="modal.set(null)">
+      @if (m.kind === 'session') {
+        <vf-session-form [session]="m.session" [maxCapacity]="ev.venueCapacity" [busy]="busy()" (saved)="saveSession($event)" />
+      } @else {
+        <vf-ticket-type-form [ticketType]="m.ticketType" [busy]="busy()" (saved)="saveTicketType($event)" />
+      }
+      @if (modalError()) {
+        <p class="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{{ modalError() }}</p>
+      }
+    </vf-modal>
+  }
+} @else {
+  <vf-spinner />
+}

@@ -1,0 +1,79 @@
+<vf-page-header [title]="id() ? (tenant()?.name ?? 'Empresa') : 'Nueva empresa'" subtitle="Cada empresa tiene sus datos completamente aislados del resto">
+  @if (tenant(); as t) {
+    <vf-status-badge [status]="t.status" />
+    @if (t.status === 'ACTIVE') {
+      <button type="button" class="vf-btn-ghost text-red-400" (click)="setStatus('SUSPENDED')">Suspender</button>
+    } @else {
+      <button type="button" class="vf-btn-secondary" (click)="setStatus('ACTIVE')">Reactivar</button>
+    }
+  }
+  <a routerLink="/admin/empresas" class="vf-btn-secondary">Volver</a>
+</vf-page-header>
+
+<form class="grid max-w-5xl gap-6 lg:grid-cols-2" [formGroup]="form" (ngSubmit)="save()" novalidate>
+  <div class="vf-card space-y-4">
+    <h2 class="font-display font-semibold text-white">Empresa</h2>
+    <div>
+      <label class="vf-label" for="name">Nombre comercial</label>
+      <input id="name" class="vf-input" formControlName="name" />
+      <vf-field-error [control]="form.controls.name" />
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="vf-label" for="legalName">Razon social</label>
+        <input id="legalName" class="vf-input" formControlName="legalName" />
+      </div>
+      <div>
+        <label class="vf-label" for="taxId">CIF / NIF</label>
+        <input id="taxId" class="vf-input" formControlName="taxId" />
+      </div>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="vf-label" for="contactEmail">Email de contacto</label>
+        <input id="contactEmail" type="email" class="vf-input" formControlName="contactEmail" />
+        <vf-field-error [control]="form.controls.contactEmail" />
+      </div>
+      <div>
+        <label class="vf-label" for="contactPhone">Telefono</label>
+        <input id="contactPhone" class="vf-input" formControlName="contactPhone" />
+      </div>
+    </div>
+  </div>
+
+  @if (!id()) {
+    <div class="vf-card space-y-4">
+      <h2 class="font-display font-semibold text-white">Administrador de la empresa</h2>
+      <p class="text-xs text-zinc-500">Se crea con el rol TENANT_ADMIN. Podra dar de alta a su equipo.</p>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="vf-label" for="adminFirstName">Nombre</label>
+          <input id="adminFirstName" class="vf-input" formControlName="adminFirstName" />
+          <vf-field-error [control]="form.controls.adminFirstName" />
+        </div>
+        <div>
+          <label class="vf-label" for="adminLastName">Apellidos</label>
+          <input id="adminLastName" class="vf-input" formControlName="adminLastName" />
+          <vf-field-error [control]="form.controls.adminLastName" />
+        </div>
+      </div>
+      <div>
+        <label class="vf-label" for="adminEmail">Email</label>
+        <input id="adminEmail" type="email" class="vf-input" formControlName="adminEmail" />
+        <vf-field-error [control]="form.controls.adminEmail" />
+      </div>
+      <div>
+        <label class="vf-label" for="adminPassword">Contrasena inicial</label>
+        <input id="adminPassword" type="password" class="vf-input" formControlName="adminPassword" autocomplete="new-password" />
+        <vf-field-error [control]="form.controls.adminPassword" />
+      </div>
+    </div>
+  }
+
+  @if (error()) {
+    <p class="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300 lg:col-span-2">{{ error() }}</p>
+  }
+  <div class="lg:col-span-2">
+    <button type="submit" class="vf-btn-primary" [disabled]="saving()">{{ saving() ? 'Guardando...' : 'Guardar' }}</button>
+  </div>
+</form>

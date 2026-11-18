@@ -1,0 +1,83 @@
+# =====================================================================
+# Bloop - servicios de infraestructura para desarrollo local.
+#
+#   docker compose up -d            -> PostgreSQL + Mailpit
+#   docker compose stop             -> detener (los datos se conservan)
+#   docker compose down -v          -> borrar contenedores Y datos (irreversible)
+#   docker compose --profile full up -d --build   -> ademas, el backend en un contenedor
+#
+# Spring Boot y Angular se ejecutan normalmente en tu maquina (recarga en caliente).
+# =====================================================================
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: bloop-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bloop}
+      POSTGRES_USER: ${POSTGRES_USER:-bloop}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bloop}
+      TZ: UTC
+    ports:
+      - "5432:5432"
+    volumes:
+      - bloop-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bloop} -d ${POSTGRES_DB:-bloop}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Servidor SMTP falso: captura los correos y los muestra en http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: bloop-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  # Backend empaquetado (opcional, perfil "full"). Para desarrollar es mas comodo mvnw spring-boot:run.
+  backend:
+    profiles: ["full"]
+    build: ./backend
+    container_name: bloop-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-bloop}
+      DB_USERNAME: ${POSTGRES_USER:-bloop}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-bloop}
+      JWT_SECRET: ${JWT_SECRET}
+      QR_SECRET: ${QR_SECRET}
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:4200}
+      # --- Correo ---
+      # Dentro del contenedor "localhost" es el propio backend: por defecto se usa el servicio "mailpit".
+      # Para un proveedor real define MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD... en .env.
+      # Antes estas variables no llegaban al contenedor (solo MAIL_HOST/PORT fijos) y nunca se autenticaba.
+      MAIL_ENABLED: ${MAIL_ENABLED:-true}
+      MAIL_HOST: ${MAIL_HOST:-mailpit}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-false}
+      MAIL_STARTTLS_ENABLE: ${MAIL_STARTTLS_ENABLE:-false}
+      MAIL_SSL_ENABLE: ${MAIL_SSL_ENABLE:-false}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@bloop.local}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Bloop}
+      # --- Imagenes ---
+      MEDIA_PROVIDER: ${MEDIA_PROVIDER:-local}
+      MEDIA_LOCAL_DIR: /data/media
+      MEDIA_PUBLIC_BASE_URL: ${MEDIA_PUBLIC_BASE_URL:-http://localhost:8080}
+      MEDIA_CLOUDINARY_CLOUD_NAME: ${MEDIA_CLOUDINARY_CLOUD_NAME:-}
+      MEDIA_CLOUDINARY_API_KEY: ${MEDIA_CLOUDINARY_API_KEY:-}
+      MEDIA_CLOUDINARY_API_SECRET: ${MEDIA_CLOUDINARY_API_SECRET:-}
+    volumes:
+      # Con MEDIA_PROVIDER=local las imagenes van a un volumen: no se pierden al reconstruir la imagen.
+      - bloop-media:/data/media
+    ports:
+      - "8080:8080"
+
+volumes:
+  bloop-pgdata:
+  bloop-media:

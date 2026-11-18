@@ -1,0 +1,59 @@
+<section class="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4 py-16">
+  <div class="pointer-events-none absolute -top-40 right-0 h-[28rem] w-[28rem] rounded-full bg-cyan-500/10 blur-3xl"></div>
+
+  <div class="relative w-full max-w-lg rounded-2xl border border-white/10 bg-zinc-950/80 p-8 shadow-2xl backdrop-blur">
+    <h1 class="font-display text-3xl font-semibold tracking-tight text-white">Crea tu cuenta</h1>
+    <p class="mt-2 text-sm text-zinc-400">Compra entradas y llevalas siempre en el movil.</p>
+
+    <form class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div>
+        <label class="vf-label" for="firstName">Nombre</label>
+        <input id="firstName" class="vf-input" formControlName="firstName" autocomplete="given-name" />
+        <vf-field-error [control]="form.controls.firstName" />
+      </div>
+      <div>
+        <label class="vf-label" for="lastName">Apellidos</label>
+        <input id="lastName" class="vf-input" formControlName="lastName" autocomplete="family-name" />
+        <vf-field-error [control]="form.controls.lastName" />
+      </div>
+      <div class="sm:col-span-2">
+        <label class="vf-label" for="email">Email</label>
+        <input id="email" type="email" class="vf-input" formControlName="email" autocomplete="email" />
+        <vf-field-error [control]="form.controls.email" [serverError]="serverErrors()['email']" />
+      </div>
+      <div>
+        <label class="vf-label" for="phone">Telefono (opcional)</label>
+        <input id="phone" class="vf-input" formControlName="phone" autocomplete="tel" />
+      </div>
+      <div>
+        <label class="vf-label" for="password">Contrasena</label>
+        <input id="password" type="password" class="vf-input" formControlName="password" autocomplete="new-password" />
+        <vf-field-error [control]="form.controls.password" />
+      </div>
+
+      <div class="space-y-3 sm:col-span-2">
+        <label class="flex items-start gap-3 text-sm text-zinc-300">
+          <input type="checkbox" class="mt-1 accent-brand-500" formControlName="acceptPrivacy" />
+          <span>He leido y acepto la politica de privacidad. Mis datos se usaran para gestionar mis compras.</span>
+        </label>
+        <vf-field-error [control]="form.controls.acceptPrivacy" />
+        <label class="flex items-start gap-3 text-sm text-zinc-400">
+          <input type="checkbox" class="mt-1 accent-brand-500" formControlName="marketingConsent" />
+          <span>Quiero recibir novedades y ofertas de los locales (opcional, puedes retirarlo cuando quieras).</span>
+        </label>
+      </div>
+
+      @if (error()) {
+        <p class="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300 sm:col-span-2">{{ error() }}</p>
+      }
+
+      <button type="submit" class="vf-btn-primary py-3 sm:col-span-2" [disabled]="loading()">
+        {{ loading() ? 'Creando cuenta...' : 'Crear cuenta' }}
+      </button>
+    </form>
+
+    <p class="mt-6 text-center text-sm text-zinc-400">
+      ¿Ya tienes cuenta? <a routerLink="/login" [queryParams]="{ returnUrl: returnUrl() }" class="vf-link">Entrar</a>
+    </p>
+  </div>
+</section>

@@ -1,0 +1,37 @@
+# Perfil de tests de integracion. La URL de la base de datos la inyecta AbstractIntegrationTest.
+bloop:
+  security:
+    jwt-secret: test-only-jwt-secret-0123456789abcdef0123
+    qr-secret: test-only-qr-secret-0123456789abcdef01234
+    refresh-cookie-secure: false
+  payments:
+    simulated-enabled: true
+  demo-data:
+    enabled: false
+  mail:
+    enabled: false
+  media:
+    provider: local
+    # Dentro de target/: los tests nunca escriben en la carpeta de imagenes del usuario.
+    local-dir: target/test-media
+
+# SMTP de los tests: nunca el del .env del desarrollador (Gmail, Brevo...). Los tests que envian
+# correo levantan su propio servidor falso (GreenMail) y solo cambian host y puerto.
+spring:
+  mail:
+    username: ""
+    password: ""
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+            required: false
+          ssl:
+            enable: false
+
+logging:
+  level:
+    com.bloop: INFO
+    org.springframework.security: WARN

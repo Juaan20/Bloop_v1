@@ -1,0 +1,50 @@
+# Integracion continua: en cada push y pull request se compila y se prueban backend y frontend.
+# El backend usa el mismo PostgreSQL 17 embebido que en local, por lo que no necesita Docker
+# ni Testcontainers en GitHub Actions.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (Maven + PostgreSQL embebido)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Tests y empaquetado
+        run: |
+          chmod +x mvnw
+          ./mvnw -B verify
+
+  frontend:
+    name: Frontend (Angular build + Vitest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Build de produccion
+        run: npx ng build
+      - name: Tests unitarios
+        run: npm test

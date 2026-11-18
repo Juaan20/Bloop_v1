@@ -1,0 +1,280 @@
+@if (loading()) {
+  <vf-spinner label="Cargando evento..." />
+} @else if (error()) {
+  <div class="mx-auto max-w-3xl px-4 py-20 text-center">
+    <p class="text-zinc-300">{{ error() }}</p>
+    <a routerLink="/eventos" class="vf-btn-secondary mt-6">Ver otros eventos</a>
+  </div>
+} @else if (event(); as ev) {
+  <!-- Cabecera del evento -->
+  <section class="relative overflow-hidden border-b border-white/5">
+    @if (selectedSession()?.imageUrl ?? ev.imageUrl; as hero) {
+      <img [src]="hero" alt="" class="absolute inset-0 h-full w-full object-cover opacity-30 blur-sm" />
+    } @else {
+      <div class="absolute inset-0 opacity-60" [style.background]="art(ev.name)"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+    }
+    <div class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6">
+      <a [routerLink]="['/locales', ev.venue.slug]" class="text-sm font-semibold tracking-widest text-fuchsia-300 uppercase hover:text-fuchsia-200">
+        {{ ev.venue.name }} · {{ ev.venue.city }}
+      </a>
+      <h1 class="mt-3 max-w-4xl font-display text-4xl font-semibold tracking-tight text-balance text-white sm:text-6xl">{{ ev.name }}</h1>
+      <div class="mt-4 flex flex-wrap gap-3 text-sm text-zinc-300">
+        @if (ev.minAge) {
+          <span class="rounded-full border border-white/20 px-3 py-1">+{{ ev.minAge }}</span>
+        }
+        <span class="rounded-full border border-white/20 px-3 py-1">{{ ev.venue.addressLine }}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1fr_24rem]">
+    <!-- Informacion -->
+    <div class="space-y-10">
+      @if (step() === 'select') {
+      @if (ev.description) {
+        <div>
+          <h2 class="font-display text-xl font-semibold text-white">Sobre el evento</h2>
+          <p class="mt-3 leading-relaxed whitespace-pre-line text-zinc-300">{{ ev.description }}</p>
+        </div>
+      }
+
+      <div>
+        <h2 class="font-display text-xl font-semibold text-white">{{ ev.sessions.length > 1 ? 'Elige el dia' : 'Fecha' }}</h2>
+        @if (ev.sessions.length === 0) {
+          <p class="mt-3 text-zinc-400">No hay fechas futuras para este evento.</p>
+        }
+        <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3" role="radiogroup" aria-label="Dia del evento">
+          @for (s of ev.sessions; track s.id) {
+            <button type="button" role="radio" [attr.aria-checked]="selectedSession()?.id === s.id" (click)="selectSession(s.id)"
+                    class="group flex cursor-pointer overflow-hidden rounded-2xl border text-left transition"
+                    [class]="selectedSession()?.id === s.id ? 'border-fuchsia-400 bg-fuchsia-500/10' : 'border-white/10 hover:border-white/30'">
+              <span class="relative w-20 shrink-0 overflow-hidden">
+                @if (s.imageUrl ?? ev.imageUrl; as img) { <img [src]="img" alt="" class="size-full object-cover" loading="lazy" /> }
+                @else { <span class="block size-full" [style.background]="art(ev.name + s.startsAt)"></span> }
+              </span>
+              <span class="min-w-0 px-4 py-3">
+                <span class="block text-xs tracking-widest text-zinc-400 uppercase">{{ s.startsAt | date: 'EEEE' }}</span>
+                <span class="block font-display text-lg font-semibold text-white">{{ s.startsAt | date: 'd MMM, HH:mm' }}</span>
+                @if (s.title) { <span class="block truncate text-sm text-zinc-300">{{ s.title }}</span> }
+                @if (s.salesPaused) { <span class="text-xs text-amber-300">Venta pausada</span> }
+                @else if (s.soldOut) { <span class="text-xs text-red-400">Agotado</span> }
+              </span>
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (selectedSession(); as day) {
+        @if (day.title || day.description || (day.imageUrl && ev.sessions.length > 1)) {
+          <!-- Cartel y detalles del dia elegido -->
+          <div class="flex flex-col gap-5 rounded-2xl border border-white/10 bg-zinc-950 p-5 sm:flex-row">
+            @if (day.imageUrl) { <img [src]="day.imageUrl" [alt]="'Cartel ' + (day.title ?? ev.name)" class="w-full rounded-xl object-cover sm:w-48" /> }
+            <div>
+              <p class="text-xs font-semibold tracking-widest text-fuchsia-300 uppercase">{{ day.startsAt | date: 'EEEE d MMMM' }}</p>
+              @if (day.title) { <h3 class="mt-1 font-display text-2xl font-semibold text-white">{{ day.title }}</h3> }
+              <p class="mt-1 text-sm text-zinc-400">{{ day.startsAt | date: 'HH:mm' }} – {{ day.endsAt | date: 'HH:mm' }}{{ day.doorsOpenAt ? ' · puertas ' + (day.doorsOpenAt | date: 'HH:mm') : '' }}</p>
+              @if (day.description) { <p class="mt-3 text-sm leading-relaxed whitespace-pre-line text-zinc-300">{{ day.description }}</p> }
+            </div>
+          </div>
+        }
+      }
+
+      @if (selectedSession(); as session) {
+        <div>
+          <h2 class="font-display text-xl font-semibold text-white">Entradas</h2>
+          @if (vipTables().length > 0) {
+            <button type="button" (click)="scrollToVip()"
+                    class="mt-3 flex w-full items-center justify-between rounded-xl border border-amber-300/30 bg-amber-300/5 px-4 py-3 text-left text-sm text-amber-100 hover:bg-amber-300/10">
+              <span>¿Vienes en grupo? Este local tiene <strong>mesas VIP</strong> con reserva (consumo minimo, sin entrada aparte).</span>
+              <span aria-hidden="true">↓</span>
+            </button>
+          }
+          <div class="mt-4 divide-y divide-white/5 overflow-hidden rounded-2xl border border-white/10">
+            @for (t of session.ticketTypes; track t.id) {
+              <div class="flex items-center justify-between gap-4 bg-zinc-950 p-5">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <p class="font-semibold text-white">{{ t.name }}</p>
+                    @if (t.category === 'VIP') {
+                      <span class="rounded bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-300">ENTRADA VIP</span>
+                    }
+                  </div>
+                  @if (t.description) {
+                    <p class="mt-1 text-sm text-zinc-500">{{ t.description }}</p>
+                  }
+                  <p class="mt-1 text-sm text-zinc-400">
+                    {{ t.price === 0 ? 'Gratis' : (t.price | currency: t.currency) }}
+                    @if (t.saleStatus === 'ON_SALE' && t.available <= 20) {
+                      <span class="ml-2 text-amber-400">¡Quedan {{ t.available }}!</span>
+                    }
+                  </p>
+                </div>
+                @if (t.saleStatus === 'ON_SALE') {
+                  <div class="flex items-center gap-3">
+                    <button type="button" class="grid h-9 w-9 place-items-center rounded-full border border-white/15 text-lg text-white disabled:opacity-30"
+                            [disabled]="!qty(t.id)" (click)="change(t, -1)" aria-label="Quitar">−</button>
+                    <span class="w-5 text-center font-semibold text-white">{{ qty(t.id) }}</span>
+                    <button type="button" class="grid h-9 w-9 place-items-center rounded-full border border-white/15 text-lg text-white disabled:opacity-30"
+                            [disabled]="(qty(t.id)) >= maxSelectable(t)" (click)="change(t, 1)" aria-label="Anadir">+</button>
+                  </div>
+                } @else {
+                  <span class="text-sm text-zinc-500">{{ t.saleStatus | statusLabel }}</span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (vipTables().length > 0) {
+        <div id="mesas-vip" class="scroll-mt-24">
+          <h2 class="font-display text-xl font-semibold text-white">Reservar mesa VIP</h2>
+          <p class="mt-1 text-sm text-zinc-400">Una mesa no es una entrada: la solicitas aqui y el local te la confirma por email.
+            Pagas el consumo minimo en el local (y el anticipo, si lo pide).</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            @for (t of vipTables(); track t.tableId) {
+              <div class="rounded-2xl border border-white/10 bg-zinc-950 p-4" [class.opacity-50]="!t.available">
+                <p class="text-xs tracking-widest text-amber-300 uppercase">{{ t.zoneName }}</p>
+                <p class="mt-1 font-semibold text-white">{{ t.tableName }} · hasta {{ t.capacity }} personas</p>
+                <p class="mt-1 text-sm text-zinc-400">Consumo minimo {{ t.minSpend | currency: 'EUR' }}{{ t.depositAmount > 0 ? ' · anticipo ' + (t.depositAmount | currency: 'EUR') : '' }}</p>
+                @if (t.available) {
+                  <button type="button" class="mt-3 rounded-lg border border-amber-300/40 px-3 py-1.5 text-sm font-semibold text-amber-200 hover:bg-amber-300/10" (click)="openReservation(t)">Solicitar reserva</button>
+                } @else {
+                  <p class="mt-3 text-sm text-zinc-500">Reservada</p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+      } @else {
+        <!-- Paso 2: datos del comprador y de cada asistente -->
+        <form class="animate-fade-in space-y-6" (ngSubmit)="buy()" novalidate>
+          <div>
+            <button type="button" class="vf-btn-ghost vf-btn-sm -ml-2.5" (click)="step.set('select')"><vf-icon name="arrow-left" class="size-4" /> Cambiar entradas</button>
+            <h2 class="mt-2 font-display text-2xl font-semibold text-white">Datos de los asistentes</h2>
+            <p class="mt-1 text-sm text-zinc-400">Cada entrada sera nominal: el nombre aparece en el QR que se valida en la puerta.</p>
+          </div>
+          @if (ev.minAge) {
+            <p class="flex items-start gap-2 rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+              <vf-icon name="shield" class="mt-0.5 size-4 shrink-0" />
+              <span>Evento para mayores de {{ ev.minAge }} anos. Indica la fecha de nacimiento y el documento de cada asistente: la edad se comprueba al comprar y el personal de puerta revisara el documento original.
+                Solo guardamos los 4 ultimos caracteres del documento.</span>
+            </p>
+          }
+          <div class="rounded-2xl border border-white/10 p-5">
+            <h3 class="text-sm font-semibold text-white">Comprador</h3>
+            <p class="mt-1 text-sm text-zinc-400">{{ buyerName() }}</p>
+            <div class="mt-3 max-w-xs">
+              <label class="vf-label" for="buyerPhone">Telefono de contacto</label>
+              <input id="buyerPhone" name="buyerPhone" type="tel" class="vf-input" maxlength="40" autocomplete="tel" [(ngModel)]="buyerPhone" placeholder="+34 600 000 000" />
+            </div>
+          </div>
+          @for (a of attendees(); track $index; let i = $index) {
+            <fieldset class="rounded-2xl border border-white/10 p-5">
+              <legend class="px-1 text-sm font-semibold text-white">Asistente {{ i + 1 }} <span class="font-normal text-zinc-500">· {{ a.ticketName }}</span></legend>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div><label class="vf-label" [for]="'fn' + i">Nombre</label>
+                  <input [id]="'fn' + i" [name]="'fn' + i" class="vf-input" maxlength="100" required [(ngModel)]="a.firstName" [attr.autocomplete]="i === 0 ? 'given-name' : 'off'" /></div>
+                <div><label class="vf-label" [for]="'ln' + i">Apellidos</label>
+                  <input [id]="'ln' + i" [name]="'ln' + i" class="vf-input" maxlength="100" required [(ngModel)]="a.lastName" [attr.autocomplete]="i === 0 ? 'family-name' : 'off'" /></div>
+                @if (ev.minAge) {
+                  <div><label class="vf-label" [for]="'bd' + i">Fecha de nacimiento</label>
+                    <input [id]="'bd' + i" [name]="'bd' + i" type="date" class="vf-input" required [max]="today" [(ngModel)]="a.birthDate" /></div>
+                  <div class="grid grid-cols-[7rem_1fr] gap-2">
+                    <div><label class="vf-label" [for]="'dt' + i">Documento</label>
+                      <select [id]="'dt' + i" [name]="'dt' + i" class="vf-input" [(ngModel)]="a.documentType">
+                        <option value="DNI">DNI</option><option value="NIE">NIE</option><option value="PASSPORT">Pasaporte</option>
+                      </select></div>
+                    <div><label class="vf-label" [for]="'dn' + i">Numero</label>
+                      <input [id]="'dn' + i" [name]="'dn' + i" class="vf-input uppercase" maxlength="30" required autocomplete="off" [(ngModel)]="a.documentNumber" /></div>
+                  </div>
+                }
+              </div>
+            </fieldset>
+          }
+          <p class="text-xs text-zinc-500">Bloop no realiza una verificacion oficial de identidad: comprobamos el formato del documento y la edad declarada, y el local revisa el documento en la entrada.</p>
+        </form>
+      }
+    </div>
+
+    <!-- Resumen de compra -->
+    <aside class="h-fit rounded-2xl border border-white/10 bg-zinc-950 p-6 lg:sticky lg:top-24">
+      <ol class="mb-5 flex items-center gap-2 text-[11px] font-medium" aria-label="Pasos de la compra">
+        <li [class]="step() === 'select' ? 'text-white' : 'text-zinc-500'" [attr.aria-current]="step() === 'select' ? 'step' : null">1 Entradas</li>
+        <li class="h-px flex-1 bg-white/10" aria-hidden="true"></li>
+        <li [class]="step() === 'details' ? 'text-white' : 'text-zinc-500'" [attr.aria-current]="step() === 'details' ? 'step' : null">2 Asistentes</li>
+        <li class="h-px flex-1 bg-white/10" aria-hidden="true"></li>
+        <li class="text-zinc-500">3 Pago</li>
+      </ol>
+      <h2 class="font-display text-lg font-semibold text-white">Tu pedido</h2>
+      @if (count() === 0) {
+        <p class="mt-3 text-sm text-zinc-500">Selecciona tus entradas.</p>
+      } @else {
+        <ul class="mt-4 space-y-2 text-sm">
+          @for (line of lines(); track line.ticket.id) {
+            <li class="flex justify-between text-zinc-300">
+              <span>{{ line.quantity }} × {{ line.ticket.name }}</span>
+              <span>{{ line.ticket.price * line.quantity | currency: line.ticket.currency }}</span>
+            </li>
+          }
+        </ul>
+        <div class="mt-4 flex justify-between border-t border-white/10 pt-4 font-semibold text-white">
+          <span>Total</span><span>{{ total() | currency: 'EUR' }}</span>
+        </div>
+      }
+      @if (count() > 0) {
+        <div class="mt-5 space-y-3 border-t border-white/10 pt-4">
+          <div>
+            <label class="text-xs text-zinc-400" for="promoCode">Codigo promocional</label>
+            <input id="promoCode" name="promoCode" class="mt-1 w-full rounded-lg border border-white/15 bg-black px-3 py-2 text-sm text-white uppercase placeholder:normal-case placeholder:text-zinc-600"
+                   placeholder="Si tienes uno, escribelo aqui" maxlength="30" [(ngModel)]="promoCode" (ngModelChange)="promoChanged()" />
+            <p class="mt-1 text-xs text-zinc-500">El descuento se aplica al reservar las entradas.</p>
+          </div>
+          <label class="flex items-start gap-2 text-xs text-zinc-400">
+            <input type="checkbox" class="mt-0.5" [(ngModel)]="marketingConsent" />
+            Quiero recibir novedades y ofertas de {{ ev.venue.name }} y su organizador.
+          </label>
+        </div>
+      }
+      @if (buyError()) {
+        <p class="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{{ buyError() }}</p>
+      }
+      <button type="button" class="mt-6 w-full rounded-xl bg-gradient-to-r from-brand-600 to-accent-600 py-3.5 shadow-(--shadow-glow) font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+              [disabled]="count() === 0 || buying()" (click)="step() === 'select' ? next() : buy()">
+        {{ buying() ? 'Reservando...' : step() === 'select' ? 'Continuar' : 'Reservar y elegir pago' }}
+      </button>
+      <p class="mt-3 text-center text-xs text-zinc-500">Reservamos tus entradas durante 15 minutos mientras pagas.</p>
+    </aside>
+  </section>
+}
+
+<vf-modal [open]="!!reserving()" title="Solicitar mesa VIP" (closed)="reserving.set(null)">
+  @if (reserving(); as t) {
+    <form class="space-y-4" (ngSubmit)="requestReservation()">
+      <p class="text-sm text-zinc-300">{{ t.zoneName }} · <strong>{{ t.tableName }}</strong> · consumo minimo {{ t.minSpend | currency: 'EUR' }}</p>
+      @if (t.depositAmount > 0) {
+        <p class="text-xs text-amber-300">El local pide un anticipo de {{ t.depositAmount | currency: 'EUR' }} y te indicara como abonarlo.</p>
+      }
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="vf-label" for="guests">Personas (max. {{ t.capacity }})</label>
+          <input id="guests" name="guests" type="number" min="1" [max]="t.capacity" class="vf-input" [(ngModel)]="reservationGuests" />
+        </div>
+        <div>
+          <label class="vf-label" for="phone">Telefono de contacto</label>
+          <input id="phone" name="phone" class="vf-input" maxlength="40" [(ngModel)]="reservationPhone" />
+        </div>
+      </div>
+      <div>
+        <label class="vf-label" for="notes">Comentarios (opcional)</label>
+        <input id="notes" name="notes" class="vf-input" maxlength="1000" [(ngModel)]="reservationNotes" placeholder="Cumpleanos, hora de llegada..." />
+      </div>
+      @if (reservationError()) { <p class="text-sm text-red-400">{{ reservationError() }}</p> }
+      <button type="submit" class="vf-btn-primary" [disabled]="sendingReservation() || reservationGuests < 1 || reservationGuests > t.capacity">
+        {{ sendingReservation() ? 'Enviando...' : 'Enviar solicitud' }}
+      </button>
+    </form>
+  }
+</vf-modal>

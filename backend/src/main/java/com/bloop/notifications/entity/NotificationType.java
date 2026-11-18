@@ -1,0 +1,19 @@
+package com.bloop.notifications.entity;
+
+public enum NotificationType {
+    ORDER_CONFIRMED,
+    ORDER_REFUNDED,
+    PASSWORD_RESET,
+    WELCOME,
+    // Fase 2
+    TICKETS_RESENT,
+    TICKET_TRANSFERRED,
+    EVENT_CHANGED,
+    EVENT_CANCELLED,
+    RESERVATION_RECEIVED,
+    RESERVATION_CONFIRMED,
+    RESERVATION_CANCELLED,
+    // Fase 6
+    RESERVATION_PAID,
+    TEST
+}

@@ -1,0 +1,73 @@
+<section class="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4 py-16">
+  <!-- Fondo: rejilla tenue + halo de color -->
+  <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgb(255_255_255/0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgb(255_255_255/0.03)_1px,transparent_1px)] bg-size-[48px_48px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"></div>
+  <div class="pointer-events-none absolute -top-48 left-1/2 h-[32rem] w-[44rem] -translate-x-1/2 rounded-full bg-brand-600/20 blur-3xl"></div>
+
+  <div class="relative grid w-full max-w-4xl animate-fade-in overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/80 shadow-(--shadow-pop) backdrop-blur lg:grid-cols-2">
+    <!-- Formulario -->
+    <div class="p-8 sm:p-10">
+      <vf-logo [size]="30" />
+      <h1 class="mt-8 font-display text-2xl font-semibold tracking-tight text-white">Bienvenido de nuevo</h1>
+      <p class="mt-1.5 text-sm text-zinc-400">Accede para comprar entradas o gestionar tu local.</p>
+
+      <form class="mt-8 space-y-5" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div>
+          <label class="vf-label" for="email">Email</label>
+          <input id="email" type="email" class="vf-input h-10" formControlName="email" autocomplete="email" placeholder="tu@empresa.com" />
+          <vf-field-error [control]="form.controls.email" />
+        </div>
+        <div>
+          <div class="flex items-center justify-between">
+            <label class="vf-label" for="password">Contrasena</label>
+            <a routerLink="/recuperar-contrasena" class="mb-1.5 text-xs vf-link">¿La has olvidado?</a>
+          </div>
+          <input id="password" type="password" class="vf-input h-10" formControlName="password" autocomplete="current-password" />
+          <vf-field-error [control]="form.controls.password" />
+        </div>
+
+        @if (error()) {
+          <p class="flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm text-red-300" role="alert">
+            <vf-icon name="alert" class="mt-0.5 size-4" /> {{ error() }}
+          </p>
+        }
+
+        <button type="submit" class="vf-btn-primary h-10 w-full" [disabled]="loading()">
+          @if (loading()) {
+            <span class="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
+            Entrando...
+          } @else {
+            Entrar <vf-icon name="arrow-right" class="size-4" />
+          }
+        </button>
+      </form>
+
+      <p class="mt-8 text-sm text-zinc-400">
+        ¿No tienes cuenta? <a routerLink="/registro" [queryParams]="{ returnUrl: returnUrl() }" class="vf-link">Crear cuenta</a>
+      </p>
+    </div>
+
+    <!-- Panel de marca (solo escritorio): describe funciones reales del producto -->
+    <aside class="relative hidden overflow-hidden border-l border-zinc-800 bg-zinc-900/60 p-10 lg:flex lg:flex-col lg:justify-between">
+      <div class="pointer-events-none absolute -right-24 -bottom-24 size-80 rounded-full bg-accent-500/15 blur-3xl"></div>
+      <div class="pointer-events-none absolute -top-16 -left-10 size-60 rounded-full bg-brand-500/15 blur-3xl"></div>
+      <div class="relative">
+        <p class="text-xs font-medium tracking-wide text-brand-300 uppercase">Plataforma para ocio nocturno</p>
+        <p class="mt-3 font-display text-xl leading-snug font-semibold text-white">Entradas, puerta, barra y reservas en un solo panel.</p>
+      </div>
+      <ul class="relative mt-10 space-y-4 text-sm">
+        <li class="flex items-start gap-3">
+          <span class="grid size-8 shrink-0 place-items-center rounded-lg border border-zinc-800 bg-zinc-950 text-brand-300"><vf-icon name="ticket" class="size-4" /></span>
+          <span><span class="font-medium text-zinc-100">Venta de entradas con QR</span><br /><span class="text-zinc-500">Pago seguro y entradas al instante en el movil.</span></span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="grid size-8 shrink-0 place-items-center rounded-lg border border-zinc-800 bg-zinc-950 text-accent-400"><vf-icon name="scan" class="size-4" /></span>
+          <span><span class="font-medium text-zinc-100">Control de acceso</span><br /><span class="text-zinc-500">Escaneo en puerta sin entradas duplicadas.</span></span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="grid size-8 shrink-0 place-items-center rounded-lg border border-zinc-800 bg-zinc-950 text-emerald-300"><vf-icon name="receipt" class="size-4" /></span>
+          <span><span class="font-medium text-zinc-100">TPV e inventario</span><br /><span class="text-zinc-500">Cajas, existencias y ventas de barra en tiempo real.</span></span>
+        </li>
+      </ul>
+    </aside>
+  </div>
+</section>

@@ -1,0 +1,131 @@
+<!-- Hero -->
+<section class="relative overflow-hidden">
+  <div class="pointer-events-none absolute inset-0">
+    <div class="absolute -top-40 -left-24 h-[34rem] w-[34rem] rounded-full bg-brand-600/25 blur-[130px]"></div>
+    <div class="absolute top-0 right-[-6rem] h-[28rem] w-[28rem] rounded-full bg-accent-500/15 blur-[130px]"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,rgb(255_255_255/0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgb(255_255_255/0.035)_1px,transparent_1px)] bg-size-[64px_64px] [mask-image:radial-gradient(ellipse_at_top,black_20%,transparent_70%)]"></div>
+  </div>
+  <div class="relative mx-auto max-w-7xl px-4 pt-20 pb-16 sm:px-6 sm:pt-28">
+    <p class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs font-medium text-zinc-300 backdrop-blur"><span class="size-1.5 rounded-full bg-accent-400 shadow-[0_0_8px_var(--color-accent-400)]"></span>Noches que se recuerdan</p>
+    <h1 class="mt-6 max-w-3xl font-display text-5xl leading-[1.02] font-semibold tracking-[-0.035em] text-white sm:text-7xl">
+      Tu proxima noche
+      <span class="bg-gradient-to-r from-brand-300 via-brand-200 to-accent-300 bg-clip-text text-transparent">empieza aqui</span>
+    </h1>
+    <p class="mt-6 max-w-xl text-lg text-zinc-400">
+      Descubre clubs, salas y fiestas. Compra tu entrada en segundos y entra con el QR desde tu movil.
+    </p>
+
+    <form class="mt-10 flex max-w-xl flex-col gap-3 sm:flex-row" (ngSubmit)="doSearch()">
+      <div class="relative flex-1">
+        <vf-icon name="search" class="pointer-events-none absolute top-1/2 left-4 size-[18px] -translate-y-1/2 text-zinc-500" />
+        <input
+        name="search"
+        [(ngModel)]="search"
+        placeholder="Busca un evento o un local"
+        type="search" aria-label="Buscar eventos o locales" class="h-14 w-full rounded-xl border border-white/10 bg-white/[0.04] pr-5 pl-12 text-white placeholder-zinc-500 backdrop-blur transition focus:border-brand-400 focus:ring-4 focus:ring-brand-500/15 focus:outline-none"
+        />
+      </div>
+      <button type="submit" class="h-14 cursor-pointer rounded-xl bg-white px-7 font-semibold text-zinc-950 transition hover:bg-zinc-200 active:scale-[0.98]">Buscar</button>
+    </form>
+
+    @if (cities().length) {
+      <div class="mt-6 flex flex-wrap gap-2">
+        @for (city of cities(); track city) {
+          <button type="button" (click)="doSearch(city)"
+                  class="cursor-pointer rounded-full border border-white/10 bg-white/[0.02] px-4 py-1.5 text-sm text-zinc-300 transition hover:border-brand-400/60 hover:bg-brand-500/10 hover:text-white">
+            {{ city }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Proximos eventos -->
+<section class="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
+  <div class="mb-8 flex items-end justify-between">
+    <div><p class="text-xs font-medium tracking-[0.2em] text-brand-300 uppercase">Cartelera</p><h2 class="mt-2 font-display text-3xl font-semibold tracking-tight text-white">Proximos eventos</h2></div>
+    <a routerLink="/eventos" class="group inline-flex items-center gap-1 text-sm text-zinc-400 transition hover:text-white">Ver todos <span class="transition group-hover:translate-x-0.5" aria-hidden="true">→</span></a>
+  </div>
+
+  @if (loading()) {
+    <vf-spinner label="Cargando eventos..." />
+  } @else if (error()) {
+    <p class="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">{{ error() }}</p>
+  } @else if (events().length === 0) {
+    <p class="rounded-xl border border-white/10 p-10 text-center text-zinc-400">Todavia no hay eventos publicados.</p>
+  } @else {
+    <!-- Composicion editorial: el evento mas proximo en grande y el resto en rejilla -->
+    @if (featured(); as f) {
+      <a [routerLink]="['/eventos', f.eventSlug]" [queryParams]="{ sesion: f.sessionId }"
+         class="group relative mb-6 grid overflow-hidden rounded-3xl border border-white/[0.07] md:grid-cols-[1.4fr_1fr]">
+        <div class="relative aspect-[16/10] overflow-hidden md:aspect-auto md:min-h-80">
+          @if (f.imageUrl) {
+            <img [src]="f.imageUrl" [alt]="f.eventName" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+          } @else {
+            <div class="absolute inset-0 transition duration-700 group-hover:scale-105" [style.background]="art(f.eventName)" role="img" [attr.aria-label]="'Cartel de ' + f.eventName"></div>
+            <div class="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(90deg,rgb(255_255_255/0.04)_0_1px,transparent_1px_36px)]"></div>
+          }
+        </div>
+        <div class="flex flex-col justify-between gap-8 bg-zinc-900/60 p-8">
+          <div>
+            <p class="text-xs font-medium tracking-[0.2em] text-accent-300 uppercase">Destacado · {{ f.startsAt | date: 'EEEE d MMMM' }}</p>
+            <h3 class="mt-3 font-display text-4xl leading-[1.02] font-semibold tracking-tight text-balance text-white">{{ f.eventName }}</h3>
+            <p class="mt-3 flex items-center gap-1.5 text-zinc-400"><vf-icon name="pin" class="size-4" /> {{ f.venueName }} · {{ f.city }}</p>
+          </div>
+          <div class="flex items-center justify-between gap-4">
+            <span class="text-sm text-zinc-300">
+              @if (f.soldOut) { Agotado } @else if (f.minPrice !== null) { {{ f.minPrice === 0 ? 'Gratis' : 'Desde ' + (f.minPrice | currency: f.currency) }} }
+            </span>
+            <span class="inline-flex h-11 items-center gap-2 rounded-xl bg-white px-5 text-sm font-semibold text-zinc-950 transition group-hover:bg-zinc-200">
+              Ver entradas <vf-icon name="arrow-right" class="size-4" />
+            </span>
+          </div>
+        </div>
+      </a>
+    }
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      @for (event of rest(); track event.sessionId) {
+        <vf-event-card [event]="event" />
+      }
+    </div>
+
+    <!-- Locales con eventos en cartelera (se deducen de los eventos publicados) -->
+    @if (venues().length) {
+      <div class="mt-20">
+        <p class="text-xs font-medium tracking-[0.2em] text-brand-300 uppercase">Locales</p>
+        <h2 class="mt-2 font-display text-3xl font-semibold tracking-tight text-white">Donde pasan las cosas</h2>
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          @for (v of venues(); track v.slug) {
+            <a [routerLink]="['/locales', v.slug]" class="group flex items-center gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 transition hover:border-white/15 hover:bg-white/[0.04]">
+              <span class="size-14 shrink-0 rounded-xl ring-1 ring-white/10" [style.background]="art(v.name)" aria-hidden="true"></span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate font-medium text-white">{{ v.name }}</span>
+                <span class="block text-sm text-zinc-500">{{ v.city }} · {{ v.count }} {{ v.count === 1 ? 'fecha' : 'fechas' }} en cartelera</span>
+              </span>
+              <vf-icon name="arrow-up-right" class="size-4 text-zinc-500 transition group-hover:text-white" />
+            </a>
+          }
+        </div>
+      </div>
+    }
+  }
+</section>
+
+<!-- Para organizadores -->
+<section class="border-t border-white/5">
+  <div class="mx-auto grid max-w-7xl gap-8 px-4 py-20 sm:px-6 md:grid-cols-2">
+    <div>
+      <h2 class="font-display text-3xl font-semibold tracking-tight text-white">¿Tienes un local o organizas eventos?</h2>
+      <p class="mt-4 text-zinc-400">
+        Bloop centraliza la venta de entradas, el control de acceso con QR y las estadisticas de tus noches en un unico panel.
+      </p>
+    </div>
+    <div class="grid grid-cols-2 gap-4 text-sm">
+      <div class="rounded-xl border border-white/[0.07] bg-white/[0.02] p-5 transition hover:border-white/15"><p class="font-semibold text-white">Ticketing</p><p class="mt-1 text-zinc-500">Entradas, stock y fechas de venta.</p></div>
+      <div class="rounded-xl border border-white/[0.07] bg-white/[0.02] p-5 transition hover:border-white/15"><p class="font-semibold text-white">Acceso QR</p><p class="mt-1 text-zinc-500">Validacion instantanea y antifraude.</p></div>
+      <div class="rounded-xl border border-white/[0.07] bg-white/[0.02] p-5 transition hover:border-white/15"><p class="font-semibold text-white">Multi-local</p><p class="mt-1 text-zinc-500">Todos tus locales en un panel.</p></div>
+      <div class="rounded-xl border border-white/[0.07] bg-white/[0.02] p-5 transition hover:border-white/15"><p class="font-semibold text-white">Analitica</p><p class="mt-1 text-zinc-500">Ventas y asistencia en tiempo real.</p></div>
+    </div>
+  </div>
+</section>

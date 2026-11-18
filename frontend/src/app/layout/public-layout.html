@@ -1,0 +1,49 @@
+<div class="flex min-h-full flex-col bg-zinc-950">
+  <header class="sticky top-0 z-30 border-b border-white/5 bg-zinc-950/70 backdrop-blur-xl">
+    <nav class="mx-auto flex h-16 max-w-7xl gap-4 items-center justify-between px-4 sm:px-6">
+      <a routerLink="/" class="rounded-md" aria-label="Bloop, inicio"><vf-logo /></a>
+
+      <div class="hidden items-center gap-1 sm:flex">
+        <a routerLink="/eventos" routerLinkActive="text-white" class="rounded-lg px-3 py-2 text-sm text-zinc-400 hover:text-white">Eventos</a>
+        @if (auth.isAuthenticated()) {
+          <a routerLink="/cuenta/entradas" routerLinkActive="text-white" class="rounded-lg px-3 py-2 text-sm text-zinc-400 hover:text-white">Mis entradas</a>
+          <a routerLink="/cuenta/perfil" class="ml-2 rounded-full border border-white/10 px-3 py-1.5 text-sm text-zinc-200 hover:border-white/30">
+            {{ auth.user()?.firstName }}
+          </a>
+          <button type="button" class="vf-btn-ghost" (click)="auth.logout()">Salir</button>
+        } @else {
+          <a routerLink="/login" class="rounded-lg px-3 py-2 text-sm text-zinc-300 hover:text-white">Entrar</a>
+          <a routerLink="/registro" class="vf-btn ml-1 bg-white text-zinc-950 hover:bg-zinc-200">Crear cuenta</a>
+        }
+      </div>
+
+      <button type="button" class="vf-btn-icon sm:hidden" (click)="menuOpen.set(!menuOpen())" [attr.aria-expanded]="menuOpen()" aria-label="Menu"><vf-icon [name]="menuOpen() ? 'x' : 'menu'" class="size-5" /></button>
+    </nav>
+
+    @if (menuOpen()) {
+      <div class="flex flex-col gap-1 border-t border-white/5 px-4 py-3 sm:hidden" (click)="menuOpen.set(false)">
+        <a routerLink="/eventos" class="rounded-lg px-3 py-2.5 text-zinc-300 hover:bg-zinc-900 hover:text-white">Eventos</a>
+        @if (auth.isAuthenticated()) {
+          <a routerLink="/cuenta/entradas" class="rounded-lg px-3 py-2.5 text-zinc-300 hover:bg-zinc-900 hover:text-white">Mis entradas</a>
+          <a routerLink="/cuenta/pedidos" class="rounded-lg px-3 py-2.5 text-zinc-300 hover:bg-zinc-900 hover:text-white">Mis pedidos</a>
+          <a routerLink="/cuenta/perfil" class="rounded-lg px-3 py-2.5 text-zinc-300 hover:bg-zinc-900 hover:text-white">Mi perfil</a>
+          <button type="button" class="rounded px-2 py-2 text-left text-zinc-300" (click)="auth.logout()">Salir</button>
+        } @else {
+          <a routerLink="/login" class="rounded-lg px-3 py-2.5 text-zinc-300 hover:bg-zinc-900 hover:text-white">Entrar</a>
+          <a routerLink="/registro" class="rounded-lg px-3 py-2.5 text-zinc-300 hover:bg-zinc-900 hover:text-white">Crear cuenta</a>
+        }
+      </div>
+    }
+  </header>
+
+  <main class="flex-1">
+    <router-outlet />
+  </main>
+
+  <footer class="border-t border-white/5 py-10 text-sm text-zinc-500">
+    <div class="mx-auto flex max-w-7xl flex-col justify-between gap-4 px-4 sm:flex-row sm:px-6">
+      <div class="flex items-center gap-3"><vf-logo [size]="22" [compact]="true" /><p>© {{ year }} Bloop · Plataforma para el ocio nocturno</p></div>
+      <p>Pagos simulados en desarrollo · Sin datos de tarjeta almacenados</p>
+    </div>
+  </footer>
+</div>

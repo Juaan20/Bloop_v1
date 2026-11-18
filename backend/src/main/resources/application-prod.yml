@@ -1,0 +1,26 @@
+# =====================================================================
+# Perfil prod: sin valores por defecto para secretos (fallan si faltan).
+# =====================================================================
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+bloop:
+  security:
+    jwt-secret: ${JWT_SECRET}
+    qr-secret: ${QR_SECRET}
+    refresh-cookie-secure: true
+  demo-data:
+    enabled: false
+
+logging:
+  level:
+    root: INFO

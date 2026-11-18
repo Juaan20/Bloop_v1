@@ -1,0 +1,378 @@
+<!-- Chip de tendencia: flecha + signo + texto (no depende solo del color) -->
+<ng-template #trendChip let-t>
+  @if (t) {
+    <span class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium tabular-nums"
+          [class]="t.direction === 'up' ? 'bg-emerald-500/10 text-emerald-300' : t.direction === 'down' ? 'bg-red-500/10 text-red-300' : 'bg-zinc-500/10 text-zinc-300'"
+          [attr.title]="'Comparado con los ' + days + ' dias anteriores'">
+      <vf-icon name="arrow-up-right" class="size-3" [stroke]="2.25" [class.rotate-90]="t.direction === 'down'" [class.rotate-45]="t.direction === 'flat'" />
+      {{ trendLabel(t) }}
+    </span>
+  }
+</ng-template>
+
+<!-- Cabecera: saludo, contexto, acciones rapidas y filtros -->
+<header class="mb-8 space-y-5">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="text-sm text-zinc-500">{{ tenantName() }} · {{ venueLabel() }}</p>
+      <h1 class="mt-0.5 font-display text-2xl font-semibold tracking-tight text-white">{{ greeting() }}</h1>
+      <p class="mt-1 flex items-center gap-1.5 text-xs text-zinc-500">
+        <vf-icon name="calendar" class="size-3.5" />
+        {{ range().current.from | date: 'd MMM' }} – {{ range().current.to | date: 'd MMM yyyy' }}
+      </p>
+    </div>
+    @if (can.createEvent || can.pos || can.scan) {
+      <div class="flex flex-wrap items-center gap-2">
+        @if (can.scan) {
+          <a routerLink="/admin/acceso" class="vf-btn-secondary"><vf-icon name="scan" class="size-4" /> Escanear</a>
+        }
+        @if (can.pos) {
+          <a routerLink="/tpv" class="vf-btn-secondary"><vf-icon name="receipt" class="size-4" /> Abrir TPV</a>
+        }
+        @if (can.createEvent) {
+          <a routerLink="/admin/eventos/nuevo" class="vf-btn-primary"><vf-icon name="plus" class="size-4" /> Nuevo evento</a>
+        }
+      </div>
+    }
+  </div>
+  <div class="flex flex-wrap items-center gap-2">
+    <select class="vf-input h-9 w-auto py-0" [(ngModel)]="venueId" (change)="load()" aria-label="Establecimiento">
+      <option value="">Todos los locales</option>
+      @for (v of venues(); track v.id) {
+        <option [value]="v.id">{{ v.name }}</option>
+      }
+    </select>
+    <div class="inline-flex h-9 items-center rounded-lg border border-zinc-800 bg-zinc-900/60 p-0.5" role="group" aria-label="Periodo">
+      @for (p of periods; track p.days) {
+        <button
+          type="button"
+          class="h-full cursor-pointer rounded-md px-3 text-xs font-medium transition"
+          [class]="days === p.days ? 'bg-zinc-800 text-white shadow-(--shadow-card)' : 'text-zinc-400 hover:text-zinc-100'"
+          [attr.aria-pressed]="days === p.days"
+          (click)="setPeriod(p.days)"
+        >
+          {{ p.label }}
+        </button>
+      }
+    </div>
+  </div>
+</header>
+
+@if (error()) {
+  <div class="vf-card flex items-center justify-between gap-4 border-red-500/30">
+    <p class="flex items-center gap-2 text-sm text-red-300"><vf-icon name="alert" class="size-4" /> {{ error() }}</p>
+    <button type="button" class="vf-btn-secondary vf-btn-sm" (click)="load()">Reintentar</button>
+  </div>
+} @else if (loading() && !data()) {
+  <!-- Esqueleto con la forma del panel -->
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Cargando indicadores">
+    @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+      <div class="vf-card space-y-3"><div class="vf-skeleton h-3 w-20"></div><div class="vf-skeleton h-7 w-28"></div><div class="vf-skeleton h-2.5 w-24"></div></div>
+    }
+  </div>
+  <div class="vf-card mt-4 h-72"><div class="vf-skeleton h-full w-full opacity-40"></div></div>
+} @else if (data(); as d) {
+  <div [class.opacity-60]="loading()" class="transition-opacity">
+    <!-- KPIs -->
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="vf-card relative overflow-hidden">
+        <div class="pointer-events-none absolute -top-10 -right-10 size-28 rounded-full bg-brand-500/15 blur-2xl"></div>
+        <div class="flex items-center justify-between gap-2">
+          <p class="flex items-center gap-2 text-xs font-medium text-zinc-400"><vf-icon name="euro" class="size-3.5 text-brand-300" /> Ingresos por entradas</p>
+          <ng-container *ngTemplateOutlet="trendChip; context: { $implicit: trends().revenue }" />
+        </div>
+        <p class="mt-3 font-display text-[28px] font-semibold tracking-tight text-white tabular-nums">{{ d.kpis.revenue | currency: 'EUR' : 'symbol' : '1.0-0' }}</p>
+        <p class="mt-1 text-xs text-zinc-500">Ticket medio <span class="text-zinc-300">{{ d.kpis.averageOrderValue | currency: 'EUR' }}</span></p>
+      </div>
+      <div class="vf-card">
+        <div class="flex items-center justify-between gap-2">
+          <p class="flex items-center gap-2 text-xs font-medium text-zinc-400"><vf-icon name="ticket" class="size-3.5 text-accent-400" /> Entradas vendidas</p>
+          <ng-container *ngTemplateOutlet="trendChip; context: { $implicit: trends().tickets }" />
+        </div>
+        <p class="mt-3 font-display text-[28px] font-semibold tracking-tight text-white tabular-nums">{{ d.kpis.ticketsSold | number }}</p>
+        <p class="mt-1 text-xs text-zinc-500"><span class="text-zinc-300">{{ d.kpis.paidOrders | number }}</span> pedidos pagados</p>
+      </div>
+      @if (can.analytics && analytics(); as a) {
+        <div class="vf-card">
+          <div class="flex items-center justify-between gap-2">
+            <p class="flex items-center gap-2 text-xs font-medium text-zinc-400"><vf-icon name="receipt" class="size-3.5 text-emerald-300" /> Ventas del TPV</p>
+            <ng-container *ngTemplateOutlet="trendChip; context: { $implicit: trends().pos }" />
+          </div>
+          <p class="mt-3 font-display text-[28px] font-semibold tracking-tight text-white tabular-nums">{{ a.current.summary.posRevenue | currency: 'EUR' : 'symbol' : '1.0-0' }}</p>
+          <p class="mt-1 text-xs text-zinc-500"><span class="text-zinc-300">{{ a.current.summary.posSales | number }}</span> tickets · medio {{ a.current.summary.posAverageTicket | currency: 'EUR' }}</p>
+        </div>
+      }
+      <div class="vf-card">
+        <p class="flex items-center gap-2 text-xs font-medium text-zinc-400"><vf-icon name="scan" class="size-3.5 text-emerald-400" /> Asistencia</p>
+        <p class="mt-3 font-display text-[28px] font-semibold tracking-tight text-white tabular-nums">{{ d.kpis.checkedIn | number }}</p>
+        <div class="mt-2 h-1 rounded-full bg-zinc-800" role="presentation">
+          <div class="h-1 rounded-full bg-emerald-400/80" [style.width.%]="ratio(d.kpis.checkedIn, d.kpis.ticketsSold) * 100"></div>
+        </div>
+        <p class="mt-1.5 text-xs text-zinc-500">{{ ratio(d.kpis.checkedIn, d.kpis.ticketsSold) | percent: '1.0-0' }} de las entradas vendidas</p>
+      </div>
+      <div class="vf-card">
+        <p class="flex items-center gap-2 text-xs font-medium text-zinc-400"><vf-icon name="calendar" class="size-3.5 text-amber-300" /> Eventos activos</p>
+        <p class="mt-3 font-display text-[28px] font-semibold tracking-tight text-white tabular-nums">{{ d.kpis.publishedEvents | number }}</p>
+        <p class="mt-1 text-xs text-zinc-500">publicados · <span class="text-zinc-300">{{ d.kpis.upcomingSessions }}</span> sesiones proximas</p>
+      </div>
+      @if (can.reservations && reservations(); as r) {
+        <div class="vf-card">
+          <div class="flex items-center justify-between gap-2">
+            <p class="flex items-center gap-2 text-xs font-medium text-zinc-400"><vf-icon name="wine" class="size-3.5 text-brand-300" /> Reservas VIP</p>
+            <ng-container *ngTemplateOutlet="trendChip; context: { $implicit: trends().reservations }" />
+          </div>
+          <p class="mt-3 font-display text-[28px] font-semibold tracking-tight text-white tabular-nums">{{ r.current | number }}</p>
+          <p class="mt-1 text-xs text-zinc-500">con fecha en el periodo</p>
+        </div>
+      }
+    </div>
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-3">
+      <!-- Evolucion de ingresos (SVG propio, sin librerias) -->
+      <section class="vf-card lg:col-span-2" aria-labelledby="chart-title">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h2 id="chart-title" class="text-sm font-medium text-zinc-300">Evolucion de ingresos</h2>
+            @if (chart(); as c) {
+              <p class="mt-1 font-display text-xl font-semibold text-white tabular-nums">{{ c.total | currency: 'EUR' : 'symbol' : '1.0-0' }}</p>
+            }
+          </div>
+          <p class="flex items-center gap-2 text-xs text-zinc-400"><span class="h-0.5 w-4 rounded bg-gradient-to-r from-brand-400 to-accent-400"></span> Ingresos por entradas / dia</p>
+        </div>
+
+        @if (chart(); as c) {
+          <div class="relative mt-6 h-48" (mouseleave)="hovered.set(null)">
+            <svg [attr.viewBox]="'0 0 ' + c.width + ' ' + c.height" preserveAspectRatio="none" class="absolute inset-0 size-full overflow-visible" aria-hidden="true">
+              <defs>
+                <linearGradient id="rev-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="var(--color-brand-500)" stop-opacity="0.35" />
+                  <stop offset="1" stop-color="var(--color-brand-500)" stop-opacity="0" />
+                </linearGradient>
+                <linearGradient id="rev-line" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="var(--color-brand-400)" />
+                  <stop offset="1" stop-color="var(--color-accent-400)" />
+                </linearGradient>
+              </defs>
+              @for (g of [0.25, 0.5, 0.75]; track g) {
+                <line x1="0" [attr.x2]="c.width" [attr.y1]="c.height * g" [attr.y2]="c.height * g" stroke="var(--color-zinc-800)" stroke-dasharray="3 4" vector-effect="non-scaling-stroke" />
+              }
+              <path [attr.d]="c.area" fill="url(#rev-fill)" />
+              <path [attr.d]="c.line" fill="none" stroke="url(#rev-line)" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+            </svg>
+
+            <!-- Columnas invisibles para el tooltip -->
+            <div class="absolute inset-0 flex">
+              @for (p of c.points; track p.day; let i = $index) {
+                <div class="h-full flex-1" (mouseenter)="hovered.set(i)"></div>
+              }
+            </div>
+            @if (hovered() !== null) {
+              @let p = c.points[hovered()!];
+              <div class="pointer-events-none absolute top-0 bottom-0 w-px bg-zinc-700" [style.left.%]="p.left"></div>
+              <div class="pointer-events-none absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-zinc-950 bg-brand-300" [style.left.%]="p.left" [style.top.%]="p.top"></div>
+              <div class="pointer-events-none absolute -top-2 z-10 -translate-x-1/2 -translate-y-full rounded-lg border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-xs whitespace-nowrap shadow-(--shadow-pop)"
+                   [style.left.%]="p.left < 12 ? 12 : p.left > 88 ? 88 : p.left">
+                <p class="text-zinc-400">{{ p.day | date: 'EEE d MMM' }}</p>
+                <p class="font-medium text-white tabular-nums">{{ p.revenue | currency: 'EUR' }} <span class="font-normal text-zinc-500">· {{ p.tickets }} entradas</span></p>
+              </div>
+            }
+          </div>
+          <div class="mt-2 flex justify-between text-[11px] text-zinc-500 tabular-nums">
+            <span>{{ c.points[0].day | date: 'd MMM' }}</span>
+            <span>Max. diario {{ c.max | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+            <span>{{ c.points[c.points.length - 1].day | date: 'd MMM' }}</span>
+          </div>
+        } @else {
+          <p class="py-16 text-center text-sm text-zinc-500">Aun no hay ventas en este periodo.</p>
+        }
+      </section>
+
+      <!-- Ventas por local -->
+      <section class="vf-card" aria-labelledby="venues-title">
+        <h2 id="venues-title" class="text-sm font-medium text-zinc-300">Por local</h2>
+        <ul class="mt-5 space-y-5">
+          @for (v of d.salesByVenue; track v.venueId) {
+            <li>
+              <div class="flex items-baseline justify-between gap-3 text-sm">
+                <span class="truncate text-zinc-200">{{ v.venueName }}</span>
+                <span class="font-medium text-white tabular-nums">{{ v.revenue | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+              </div>
+              <div class="mt-2 h-1.5 rounded-full bg-zinc-800">
+                <div class="h-1.5 rounded-full bg-gradient-to-r from-brand-500 to-accent-400" [style.width.%]="ratio(v.revenue, d.kpis.revenue) * 100"></div>
+              </div>
+              <p class="mt-1.5 text-xs text-zinc-500">{{ v.ticketsSold | number }} entradas · {{ ratio(v.revenue, d.kpis.revenue) | percent: '1.0-0' }}</p>
+            </li>
+          } @empty {
+            <li class="text-sm text-zinc-500">Sin ventas por local en este periodo.</li>
+          }
+        </ul>
+      </section>
+    </div>
+
+
+    <!-- Ventas por evento y reparto de ingresos (analitica, solo con permiso de informes) -->
+    @if (can.analytics && analytics()) {
+      <div class="mt-4 grid gap-4 lg:grid-cols-3">
+        <section class="vf-card lg:col-span-2" aria-labelledby="top-events-title">
+          <div class="flex items-center justify-between gap-4">
+            <h2 id="top-events-title" class="text-sm font-medium text-zinc-300">Ventas por evento</h2>
+            <a routerLink="/admin/analitica" class="vf-link text-xs">Ver analitica</a>
+          </div>
+          <ul class="mt-5 space-y-4">
+            @for (e of topEvents(); track e.eventId; let i = $index) {
+              <li class="grid grid-cols-[1.5rem_1fr_auto] items-center gap-x-3">
+                <span class="text-xs text-zinc-600 tabular-nums">{{ i + 1 }}</span>
+                <div class="min-w-0">
+                  <div class="flex items-baseline justify-between gap-3">
+                    <p class="truncate text-sm text-zinc-200">{{ e.eventName }} <span class="text-xs text-zinc-500">· {{ e.venueName }}</span></p>
+                  </div>
+                  <div class="mt-1.5 h-1.5 rounded-full bg-zinc-800">
+                    <div class="h-1.5 rounded-full bg-brand-500" [style.width.%]="e.share * 100"></div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm font-medium text-white tabular-nums">{{ e.revenue | currency: 'EUR' : 'symbol' : '1.0-0' }}</p>
+                  <p class="text-[11px] text-zinc-500 tabular-nums">{{ e.ticketsSold | number }} entradas</p>
+                </div>
+              </li>
+            } @empty {
+              <li class="py-8 text-center text-sm text-zinc-500">Sin ventas de entradas en este periodo.</li>
+            }
+          </ul>
+        </section>
+
+        <section class="vf-card" aria-labelledby="distribution-title">
+          <h2 id="distribution-title" class="text-sm font-medium text-zinc-300">Distribucion de ingresos</h2>
+          @if (distribution(); as dist) {
+            <p class="mt-1 font-display text-xl font-semibold text-white tabular-nums">{{ dist.total | currency: 'EUR' : 'symbol' : '1.0-0' }}</p>
+            <div class="mt-5 flex h-3 overflow-hidden rounded-full bg-zinc-800" role="img"
+                 [attr.aria-label]="'Entradas ' + (dist.ticketShare | percent: '1.0-0') + ', TPV ' + (dist.posShare | percent: '1.0-0')">
+              <div class="h-full bg-brand-500" [style.width.%]="dist.ticketShare * 100"></div>
+              <div class="h-full bg-emerald-400" [style.width.%]="dist.posShare * 100"></div>
+            </div>
+            <dl class="mt-5 space-y-3 text-sm">
+              <div class="flex items-center justify-between gap-3">
+                <dt class="flex items-center gap-2 text-zinc-400"><span class="size-2.5 rounded-sm bg-brand-500"></span> Entradas</dt>
+                <dd class="text-zinc-100 tabular-nums">{{ dist.tickets | currency: 'EUR' : 'symbol' : '1.0-0' }} <span class="text-xs text-zinc-500">{{ dist.ticketShare | percent: '1.0-0' }}</span></dd>
+              </div>
+              <div class="flex items-center justify-between gap-3">
+                <dt class="flex items-center gap-2 text-zinc-400"><span class="size-2.5 rounded-sm bg-emerald-400"></span> TPV (barra y taquilla)</dt>
+                <dd class="text-zinc-100 tabular-nums">{{ dist.pos | currency: 'EUR' : 'symbol' : '1.0-0' }} <span class="text-xs text-zinc-500">{{ dist.posShare | percent: '1.0-0' }}</span></dd>
+              </div>
+            </dl>
+          } @else {
+            <p class="py-10 text-center text-sm text-zinc-500">Sin ingresos en este periodo.</p>
+          }
+        </section>
+      </div>
+    }
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-2">
+      <!-- Proximas sesiones -->
+      <section class="vf-panel" aria-labelledby="upcoming-title">
+        <div class="flex items-center justify-between px-5 pt-5 pb-3">
+          <h2 id="upcoming-title" class="text-sm font-medium text-zinc-300">Proximos eventos</h2>
+          <a routerLink="/admin/eventos" class="vf-link text-xs">Ver eventos</a>
+        </div>
+        <ul class="divide-y divide-zinc-800/70 px-2 pb-2">
+          @for (s of upcoming(); track s.sessionId) {
+            <li>
+              <a [routerLink]="['/admin/eventos', s.eventId]" class="flex items-center gap-4 rounded-lg px-3 py-3 transition hover:bg-zinc-800/40">
+                <div class="grid w-11 shrink-0 place-items-center rounded-lg border border-zinc-800 bg-zinc-950/60 py-1 text-center leading-tight">
+                  <span class="text-[10px] font-medium text-brand-300 uppercase">{{ s.startsAt | date: 'MMM' }}</span>
+                  <span class="font-display text-lg font-semibold text-white">{{ s.startsAt | date: 'd' }}</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-medium text-white">{{ s.eventName }}</p>
+                  <p class="truncate text-xs text-zinc-500">{{ s.venueName }} · {{ s.startsAt | date: 'EEE HH:mm' }}</p>
+                </div>
+                <div class="w-24 shrink-0 text-right">
+                  <p class="text-xs text-zinc-300 tabular-nums">{{ s.ticketsSold }} / {{ s.capacity }}</p>
+                  <div class="mt-1.5 h-1 rounded-full bg-zinc-800">
+                    <div class="h-1 rounded-full bg-accent-400" [style.width.%]="ratio(s.ticketsSold, s.capacity) * 100"></div>
+                  </div>
+                </div>
+              </a>
+            </li>
+          } @empty {
+            <li class="p-3">
+              <vf-empty-state title="No hay sesiones proximas" description="Crea y publica un evento para empezar a vender." icon="calendar">
+                <a routerLink="/admin/eventos/nuevo" class="vf-btn-primary vf-btn-sm"><vf-icon name="plus" class="size-3.5" /> Crear evento</a>
+              </vf-empty-state>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <!-- Actividad reciente: ultimos pedidos y reservas -->
+      @if (can.orders || can.reservations) {
+        <section class="vf-panel" aria-labelledby="activity-title">
+          <div class="flex items-center justify-between px-5 pt-5 pb-3">
+            <h2 id="activity-title" class="text-sm font-medium text-zinc-300">Actividad reciente</h2>
+            @if (can.orders) {
+              <a routerLink="/admin/ventas" class="vf-link text-xs">Ver pedidos</a>
+            }
+          </div>
+          @if (feed(); as items) {
+            <ul class="divide-y divide-zinc-800/70 px-2 pb-2">
+              @for (item of items; track item.id) {
+                <li>
+                  <a [routerLink]="item.link" class="flex items-center gap-3 rounded-lg px-3 py-3 transition hover:bg-zinc-800/40">
+                    <span class="grid size-8 shrink-0 place-items-center rounded-full bg-zinc-800 text-zinc-400"><vf-icon [name]="item.icon" class="size-4" /></span>
+                    <div class="min-w-0 flex-1">
+                      <p class="truncate text-sm text-zinc-200">{{ item.title }}</p>
+                      <p class="truncate text-xs text-zinc-500">{{ item.detail }} · {{ item.date | date: 'd MMM, HH:mm' }}</p>
+                    </div>
+                    <div class="flex shrink-0 flex-col items-end gap-1">
+                      @if (item.amount !== null) {
+                        <span class="text-sm font-medium text-white tabular-nums">{{ item.amount | currency: 'EUR' }}</span>
+                      }
+                      <vf-status-badge [status]="item.status" />
+                    </div>
+                  </a>
+                </li>
+              } @empty {
+                <li class="px-3 py-10 text-center text-sm text-zinc-500">Todavia no hay actividad.</li>
+              }
+            </ul>
+          } @else {
+            <div class="space-y-4 px-5 pb-5" aria-hidden="true">
+              @for (i of [1, 2, 3, 4]; track i) {
+                <div class="flex items-center gap-3"><div class="vf-skeleton size-8 rounded-full"></div><div class="flex-1 space-y-2"><div class="vf-skeleton h-3 w-1/2"></div><div class="vf-skeleton h-2.5 w-1/3"></div></div></div>
+              }
+            </div>
+          }
+        </section>
+      }
+    </div>
+
+    <!-- Rendimiento de sesiones -->
+    @if (d.sessions.length > 0) {
+      <section class="vf-panel mt-4 overflow-hidden" aria-labelledby="sessions-title">
+        <h2 id="sessions-title" class="px-5 pt-5 pb-3 text-sm font-medium text-zinc-300">Rendimiento por sesion</h2>
+        <div class="overflow-x-auto">
+          <table class="vf-table">
+            <thead>
+              <tr><th>Evento</th><th>Fecha</th><th class="text-right">Vendidas</th><th>Ocupacion</th><th class="text-right">Asistencia</th><th class="text-right">Ingresos</th></tr>
+            </thead>
+            <tbody>
+              @for (s of d.sessions; track s.sessionId) {
+                <tr>
+                  <td><a [routerLink]="['/admin/eventos', s.eventId]" class="font-medium text-white hover:underline">{{ s.eventName }}</a><p class="text-xs text-zinc-500">{{ s.venueName }}</p></td>
+                  <td class="whitespace-nowrap">{{ s.startsAt | date: 'EEE d MMM, HH:mm' }}</td>
+                  <td class="text-right tabular-nums">{{ s.ticketsSold }} / {{ s.capacity }}</td>
+                  <td class="w-40">
+                    <div class="h-1.5 rounded-full bg-zinc-800"><div class="h-1.5 rounded-full bg-emerald-400/80" [style.width.%]="ratio(s.ticketsSold, s.capacity) * 100"></div></div>
+                    <p class="mt-1 text-xs text-zinc-500">{{ ratio(s.ticketsSold, s.capacity) | percent: '1.0-0' }}</p>
+                  </td>
+                  <td class="text-right tabular-nums">{{ s.checkedIn }}</td>
+                  <td class="text-right font-medium text-white tabular-nums">{{ s.revenue | currency: 'EUR' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  </div>
+}

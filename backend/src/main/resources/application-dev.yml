@@ -1,0 +1,29 @@
+# =====================================================================
+# Perfil dev: desarrollo local. Valores por defecto comodos y NO secretos.
+# =====================================================================
+spring:
+  datasource:
+    password: ${DB_PASSWORD:bloop}
+  jpa:
+    show-sql: false
+
+bloop:
+  security:
+    # Claves SOLO para desarrollo local. En produccion se definen por entorno.
+    jwt-secret: ${JWT_SECRET:dev-only-jwt-secret-change-me-0123456789abcdef}
+    qr-secret: ${QR_SECRET:dev-only-qr-secret-change-me-0123456789abcdef}
+    refresh-cookie-secure: false
+  payments:
+    simulated-enabled: true
+  demo-data:
+    # Crea usuarios, empresa, local y evento de ejemplo si la BD esta vacia.
+    enabled: ${DEMO_DATA:true}
+    password: ${DEMO_PASSWORD:Demo1234!}
+    # Historico de demostracion (p. ej. 120 = 4 meses de actividad). 0 = desactivado.
+    history-days: ${DEMO_HISTORY_DAYS:0}
+    # Juego de datos demo: kembo (discoteca de Zaragoza con 4 meses de actividad) o noctambula (el antiguo).
+    dataset: ${DEMO_DATASET:kembo}
+
+logging:
+  level:
+    com.bloop: DEBUG
