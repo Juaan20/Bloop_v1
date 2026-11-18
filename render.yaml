@@ -6,7 +6,8 @@ services:
     name: bloop-backend
     runtime: docker
     plan: free
-    region: frankfurt
+    # Misma region que la base de datos de Neon (us-east-2, Ohio): cada consulta cruza menos red.
+    region: ohio
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /actuator/health
@@ -22,13 +23,25 @@ services:
       # El plan gratuito tiene 512 MB: limita la memoria de la JVM.
       - key: JAVA_TOOL_OPTIONS
         value: "-XX:MaxRAMPercentage=75 -XX:+UseSerialGC -Xss512k"
-      # --- Base de datos (Neon u otro PostgreSQL 17). Ej.: jdbc:postgresql://HOST/neondb?sslmode=require
+      # --- Base de datos: Neon, conexion DIRECTA (DATABASE_URL_UNPOOLED, host SIN "-pooler").
+      # El backend ya tiene su pool (HikariCP) y Flyway migra al arrancar: el pooler de Neon
+      # (PgBouncer en modo transaccion) no sirve para migraciones ni estado de sesion.
+      # De postgresql://USUARIO:CLAVE@HOST/neondb?sslmode=require&... salen las tres variables:
+      #   DB_URL = jdbc:postgresql://HOST/neondb?sslmode=require   DB_USERNAME = USUARIO   DB_PASSWORD = CLAVE
       - key: DB_URL
         sync: false
       - key: DB_USERNAME
         sync: false
       - key: DB_PASSWORD
         sync: false
+      # Pool pequeno que suelta las conexiones sin uso: asi Neon puede suspenderse (scale to zero)
+      # y no se gastan las horas de computo del plan gratuito.
+      - key: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+        value: "5"
+      - key: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+        value: "0"
+      - key: SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT
+        value: "60000"
       # --- Seguridad (minimo 32 caracteres; Render las genera al crear el servicio) ---
       - key: JWT_SECRET
         generateValue: true

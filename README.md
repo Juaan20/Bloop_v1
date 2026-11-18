@@ -189,11 +189,16 @@ Navegador ──> Vercel (Angular)
                  └──> Stripe (pagos en modo test, opcional)
 ```
 
-**1. Base de datos en Neon** (neon.tech, plan gratuito)
-- Crea un proyecto con PostgreSQL 17 en una region europea.
-- Copia la cadena de conexion **directa** (no la de *pooler*) y conviertela a JDBC:
-  `jdbc:postgresql://<host>/<base>?sslmode=require`, con usuario y contrasena por separado.
+**1. Base de datos en Neon** (neon.tech, plan gratuito; probado con PostgreSQL 18)
+- El proyecto ya esta enlazado en `.neon` y `neon.ts` (CLI de Neon: `npm i -g neon`). Con `neon login` y
+  `neon env pull` se descargan las variables a `.env.local` (ignorado por Git): `DATABASE_URL` (pooler)
+  y `DATABASE_URL_UNPOOLED` (directa).
+- Usa la conexion **directa** (`DATABASE_URL_UNPOOLED`, host sin `-pooler`): el backend ya tiene su propio
+  pool (HikariCP) y Flyway migra al arrancar, algo que el pooler de Neon (PgBouncer) no admite bien.
+- Conviertela a las tres variables del backend: de `postgresql://USUARIO:CLAVE@HOST/neondb?...` salen
+  `DB_URL=jdbc:postgresql://HOST/neondb?sslmode=require`, `DB_USERNAME=USUARIO` y `DB_PASSWORD=CLAVE`.
 - Flyway crea todas las tablas al primer arranque (incluida la extension `btree_gist`).
+- El backend de Render va en la misma region que la base de datos (`ohio` en `render.yaml`, porque Neon esta en `us-east-2`).
 
 **2. Backend en Render** (render.com, plan gratuito)
 - *New > Blueprint* y elige este repositorio: `render.yaml` crea el servicio `bloop-backend` con el `Dockerfile`.
@@ -210,7 +215,7 @@ Navegador ──> Vercel (Angular)
 
 | Servicio | Para que | Obligatorio |
 |---|---|---|
-| Neon (o cualquier PostgreSQL 17) | Base de datos | Si |
+| Neon (o cualquier PostgreSQL 17 o superior) | Base de datos | Si |
 | Cloudinary | Carteles e imagenes (el disco de Render se borra en cada despliegue) | Si, para subir imagenes |
 | SMTP (Gmail con contrasena de aplicacion, Brevo, Resend...) | Correos de entradas, reservas y contrasenas | Si, para enviar correo |
 | Stripe (modo test) | Pago online de entradas | Opcional |

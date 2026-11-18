@@ -33,3 +33,5 @@ Thumbs.db
 # Despliegue (enlace local con Vercel)
 .vercel/
 frontend/.vercel/
+.neon
+node_modules/
