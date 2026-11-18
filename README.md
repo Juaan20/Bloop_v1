@@ -230,7 +230,7 @@ Navegador ──> Vercel (Angular)
 
 ## Estado del despliegue
 
-Registro de lo que ya esta montado (noviembre de 2026). Las claves y contrasenas **no estan en este repositorio**:
+Registro de lo que ya esta montado (noviembre de 2026). Web publica: **https://bloop-v1.vercel.app**. Las claves y contrasenas **no estan en este repositorio**:
 viven en el panel de cada servicio y, en local, en `.env` / `.env.local` (ignorados por Git).
 
 | Pieza | Servicio | Estado | Detalles |
@@ -238,7 +238,7 @@ viven en el panel de cada servicio y, en local, en `.env` / `.env.local` (ignora
 | Base de datos | **Neon** (plan gratuito) | Hecho y probado | Proyecto enlazado con `neon init` (`neon.ts`), rama `production`, region `us-east-2` (Ohio), PostgreSQL 18. Flyway ya ha aplicado las 17 migraciones. Probado en modo `prod`: arranque, lectura, registro, login y borrado de cuenta. |
 | Imagenes | **Cloudinary** (plan gratuito) | Hecho y probado | Carpeta `bloop`. Probado desde el backend: subida, descarga desde `res.cloudinary.com` y borrado. |
 | Backend | **Render** (plan Free) | Hecho y probado | Blueprint `Bloop` creado desde `render.yaml`: servicio `bloop-backend` (Docker, region Ohio) en `https://bloop-backend-1mwm.onrender.com`. Primer arranque: unos 4 minutos. Probado: `/actuator/health` = `UP`, API publica 200, login rechaza cuentas inexistentes (401) y Swagger cerrado en produccion. |
-| Frontend | **Vercel** (plan Hobby) | Pendiente | Se importa el repositorio con *Root Directory* = `frontend`. Despues se actualizan `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` en Render con la URL definitiva. |
+| Frontend | **Vercel** (plan Hobby) | Hecho y probado | `https://bloop-v1.vercel.app` (Root Directory `frontend`). Probado a traves de Vercel: pagina, rutas internas, logo, reenvio de `/api` al backend, registro, login, renovacion de sesion con la cookie y borrado de cuenta. `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` de Render apuntan a esta URL. |
 | Correo | **Gmail** (SMTP con contrasena de aplicacion) | Configurado | `smtp.gmail.com:587` con STARTTLS. Pendiente de comprobar que Render no bloquea el puerto SMTP. |
 | Pagos | Stripe (modo test) | Desactivado | Sin claves: la web funciona, pero sin pago online. |
 
@@ -250,7 +250,5 @@ El resto (`SPRING_PROFILES_ACTIVE=prod`, puerto, memoria de la JVM, pool de cone
 lo pone `render.yaml`; los dos secretos los genera Render.
 
 **Pasos que quedan**
-1. Desplegar el frontend en Vercel (`frontend/vercel.json` ya apunta al backend de Render).
-2. Poner la URL de Vercel en `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` de Render.
-3. Crear el primer administrador de la plataforma (en produccion no hay datos de demostracion) y probar un correo real.
+1. Crear el primer administrador de la plataforma (en produccion no hay datos de demostracion) y probar un correo real.
 
