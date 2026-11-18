@@ -3,11 +3,13 @@
 # a mano en el panel de Render (nunca en este fichero). JWT_SECRET y QR_SECRET las genera Render.
 services:
   - type: web
-    name: bloop-backend
+    # Servicio en Europa. Render no permite cambiar la region de un servicio existente: el antiguo
+    # "bloop-backend" (Ohio) se sustituye por este y se borra a mano desde el panel de Render.
+    name: bloop-backend-eu
     runtime: docker
     plan: free
-    # Misma region que la base de datos de Neon (us-east-2, Ohio): cada consulta cruza menos red.
-    region: ohio
+    # Misma region que la base de datos de Neon (aws-eu-central-1, Frankfurt) y cerca de los usuarios.
+    region: frankfurt
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /actuator/health

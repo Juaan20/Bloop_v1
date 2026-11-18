@@ -198,7 +198,7 @@ Navegador ──> Vercel (Angular)
 - Conviertela a las tres variables del backend: de `postgresql://USUARIO:CLAVE@HOST/neondb?...` salen
   `DB_URL=jdbc:postgresql://HOST/neondb?sslmode=require`, `DB_USERNAME=USUARIO` y `DB_PASSWORD=CLAVE`.
 - Flyway crea todas las tablas al primer arranque (incluida la extension `btree_gist`).
-- El backend de Render va en la misma region que la base de datos (`ohio` en `render.yaml`, porque Neon esta en `us-east-2`).
+- El backend de Render va en la misma region que la base de datos: `frankfurt` en `render.yaml`, porque Neon esta en `aws-eu-central-1` (Frankfurt), cerca de los usuarios.
 
 **2. Backend en Render** (render.com, plan gratuito)
 - *New > Blueprint* y elige este repositorio: `render.yaml` crea el servicio `bloop-backend` con el `Dockerfile`.
@@ -235,9 +235,9 @@ viven en el panel de cada servicio y, en local, en `.env` / `.env.local` (ignora
 
 | Pieza | Servicio | Estado | Detalles |
 |---|---|---|---|
-| Base de datos | **Neon** (plan gratuito) | Hecho y probado | Proyecto enlazado con `neon init` (`neon.ts`), rama `production`, region `us-east-2` (Ohio), PostgreSQL 18. Flyway ya ha aplicado las 17 migraciones. Probado en modo `prod`: arranque, lectura, registro, login y borrado de cuenta. |
+| Base de datos | **Neon** (plan gratuito) | Hecho y probado | Proyecto `bloop-eu` en `aws-eu-central-1` (Frankfurt), rama `main`, PostgreSQL 18, enlazado en `.neon`. Flyway ha aplicado las 17 migraciones y estan cargados los datos de demostracion de Kembo. (Antes estuvo en `us-east-2`; se movio a Europa porque la region de un proyecto no se puede cambiar.) |
 | Imagenes | **Cloudinary** (plan gratuito) | Hecho y probado | Carpeta `bloop`. Probado desde el backend: subida, descarga desde `res.cloudinary.com` y borrado. |
-| Backend | **Render** (plan Free) | Hecho y probado | Blueprint `Bloop` creado desde `render.yaml`: servicio `bloop-backend` (Docker, region Ohio) en `https://bloop-backend-1mwm.onrender.com`. Primer arranque: unos 4 minutos. Probado: `/actuator/health` = `UP`, API publica 200, login rechaza cuentas inexistentes (401) y Swagger cerrado en produccion. |
+| Backend | **Render** (plan Free) | En despliegue | Servicio nuevo `bloop-backend-eu` (Docker, region Frankfurt) creado por el Blueprint `Bloop`. Sustituye a `bloop-backend` (Ohio, `https://bloop-backend-1mwm.onrender.com`), que se borrara cuando el nuevo funcione. |
 | Frontend | **Vercel** (plan Hobby) | Hecho y probado | `https://bloop-v1.vercel.app` (Root Directory `frontend`). Probado a traves de Vercel: pagina, rutas internas, logo, reenvio de `/api` al backend, registro, login, renovacion de sesion con la cookie y borrado de cuenta. `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` de Render apuntan a esta URL. |
 | Correo | **Gmail** (SMTP con contrasena de aplicacion) | Configurado | `smtp.gmail.com:587` con STARTTLS. Pendiente de comprobar que Render no bloquea el puerto SMTP. |
 | Pagos | Stripe (modo test) | Desactivado | Sin claves: la web funciona, pero sin pago online. |
@@ -250,5 +250,6 @@ El resto (`SPRING_PROFILES_ACTIVE=prod`, puerto, memoria de la JVM, pool de cone
 lo pone `render.yaml`; los dos secretos los genera Render.
 
 **Pasos que quedan**
-1. Crear el primer administrador de la plataforma (en produccion no hay datos de demostracion) y probar un correo real.
+1. Terminar el cambio a Europa: rellenar las variables de `bloop-backend-eu` en Render, poner su URL en `frontend/vercel.json` y borrar el servicio de Ohio y el proyecto de Neon de `us-east-2`.
+2. Crear el primer administrador de la plataforma (en produccion no hay datos de demostracion) y probar un correo real.
 
