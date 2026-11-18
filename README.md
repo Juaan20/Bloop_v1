@@ -133,7 +133,7 @@ cd frontend
 npm start                         # http://localhost:4200 (redirige /api al backend)
 ```
 
-**Datos de demostracion (solo en local):** la discoteca *Kembo* (Zaragoza) con dos salas, 20 reservados,
+**Datos de demostracion (solo en local):** la discoteca *Kembo* (Zaragoza) "se que no es así pero por si acaso no pongo el mismo nombre jajaja" con dos salas, 20 reservados,
 tres meses de actividad y el mes siguiente con preventa. Todas las cuentas usan la contrasena de `DEMO_PASSWORD`
 (por defecto `Demo1234!`):
 
