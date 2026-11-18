@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://bloop-backend.onrender.com/api/:path*"
+      "destination": "https://bloop-backend-1mwm.onrender.com/api/:path*"
     },
     {
       "source": "/(.*)",

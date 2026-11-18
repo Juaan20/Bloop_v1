@@ -204,11 +204,11 @@ Navegador ──> Vercel (Angular)
 - *New > Blueprint* y elige este repositorio: `render.yaml` crea el servicio `bloop-backend` con el `Dockerfile`.
 - Rellena en el panel las variables marcadas como `sync: false` (base de datos, correo, Cloudinary, URLs).
   `JWT_SECRET` y `QR_SECRET` las genera Render automaticamente.
-- Comprueba que responde en `https://bloop-backend.onrender.com/actuator/health` (si Render te asigna otro nombre, usalo en el paso 3).
+- Comprueba que responde en `https://<tu-servicio>.onrender.com/actuator/health`. Render anade un sufijo al nombre si ya esta cogido (aqui: `bloop-backend-1mwm`).
 
 **3. Frontend en Vercel** (vercel.com, plan Hobby gratuito)
 - *Add New > Project*, importa el repositorio y pon **Root Directory = `frontend`**. El resto lo toma de `frontend/vercel.json`.
-- Si la URL de tu backend no es `https://bloop-backend.onrender.com`, cambiala en `frontend/vercel.json`.
+- La URL del backend esta en `frontend/vercel.json` (`rewrites`); si cambia, actualizala ahi.
 - Al terminar, copia la URL de Vercel en `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` del backend y vuelve a desplegarlo.
 
 **Servicios externos necesarios**
@@ -237,7 +237,7 @@ viven en el panel de cada servicio y, en local, en `.env` / `.env.local` (ignora
 |---|---|---|---|
 | Base de datos | **Neon** (plan gratuito) | Hecho y probado | Proyecto enlazado con `neon init` (`neon.ts`), rama `production`, region `us-east-2` (Ohio), PostgreSQL 18. Flyway ya ha aplicado las 17 migraciones. Probado en modo `prod`: arranque, lectura, registro, login y borrado de cuenta. |
 | Imagenes | **Cloudinary** (plan gratuito) | Hecho y probado | Carpeta `bloop`. Probado desde el backend: subida, descarga desde `res.cloudinary.com` y borrado. |
-| Backend | **Render** (plan Free) | En despliegue | Blueprint `Bloop` creado desde `render.yaml` con el servicio `bloop-backend` (Docker, region Ohio). URL prevista: `https://bloop-backend.onrender.com`. |
+| Backend | **Render** (plan Free) | Hecho y probado | Blueprint `Bloop` creado desde `render.yaml`: servicio `bloop-backend` (Docker, region Ohio) en `https://bloop-backend-1mwm.onrender.com`. Primer arranque: unos 4 minutos. Probado: `/actuator/health` = `UP`, API publica 200, login rechaza cuentas inexistentes (401) y Swagger cerrado en produccion. |
 | Frontend | **Vercel** (plan Hobby) | Pendiente | Se importa el repositorio con *Root Directory* = `frontend`. Despues se actualizan `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` en Render con la URL definitiva. |
 | Correo | **Gmail** (SMTP con contrasena de aplicacion) | Configurado | `smtp.gmail.com:587` con STARTTLS. Pendiente de comprobar que Render no bloquea el puerto SMTP. |
 | Pagos | Stripe (modo test) | Desactivado | Sin claves: la web funciona, pero sin pago online. |
@@ -250,8 +250,7 @@ El resto (`SPRING_PROFILES_ACTIVE=prod`, puerto, memoria de la JVM, pool de cone
 lo pone `render.yaml`; los dos secretos los genera Render.
 
 **Pasos que quedan**
-1. Esperar a que Render termine el primer despliegue y comprobar `https://bloop-backend.onrender.com/actuator/health` (`UP`).
-2. Desplegar el frontend en Vercel. Si la URL del backend es otra, cambiarla en `frontend/vercel.json`.
-3. Poner la URL de Vercel en `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` de Render.
-4. Crear el primer administrador de la plataforma (en produccion no hay datos de demostracion) y probar un correo real.
+1. Desplegar el frontend en Vercel (`frontend/vercel.json` ya apunta al backend de Render).
+2. Poner la URL de Vercel en `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` de Render.
+3. Crear el primer administrador de la plataforma (en produccion no hay datos de demostracion) y probar un correo real.
 
