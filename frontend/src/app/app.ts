@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, isDevMode } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 import { ToastContainer } from './shared/ui/toast-container';
 
 /** Componente raiz: solo contiene el router y los avisos globales. */
@@ -11,4 +12,11 @@ import { ToastContainer } from './shared/ui/toast-container';
     <vf-toast-container />
   `,
 })
-export class App {}
+export class App {
+  constructor() {
+    injectSpeedInsights({
+      framework: 'angular',
+      debug: isDevMode(),
+    });
+  }
+}
