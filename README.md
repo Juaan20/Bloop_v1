@@ -204,7 +204,7 @@ Navegador ──> Vercel (Angular)
 - *New > Blueprint* y elige este repositorio: `render.yaml` crea el servicio `bloop-backend` con el `Dockerfile`.
 - Rellena en el panel las variables marcadas como `sync: false` (base de datos, correo, Cloudinary, URLs).
   `JWT_SECRET` y `QR_SECRET` las genera Render automaticamente.
-- Comprueba que responde en `https://<tu-servicio>.onrender.com/actuator/health`. Render anade un sufijo al nombre si ya esta cogido (aqui: `bloop-backend-1mwm`).
+- Comprueba que responde en `https://<tu-servicio>.onrender.com/actuator/health`. Render anade un sufijo al nombre si ya esta cogido (p. ej. `bloop-backend-1mwm`).
 
 **3. Frontend en Vercel** (vercel.com, plan Hobby gratuito)
 - *Add New > Project*, importa el repositorio y pon **Root Directory = `frontend`**. El resto lo toma de `frontend/vercel.json`.
@@ -237,7 +237,7 @@ viven en el panel de cada servicio y, en local, en `.env` / `.env.local` (ignora
 |---|---|---|---|
 | Base de datos | **Neon** (plan gratuito) | Hecho y probado | Proyecto `bloop-eu` en `aws-eu-central-1` (Frankfurt), rama `main`, PostgreSQL 18, enlazado en `.neon`. Flyway ha aplicado las 17 migraciones y estan cargados los datos de demostracion de Kembo. (Antes estuvo en `us-east-2`; se movio a Europa porque la region de un proyecto no se puede cambiar.) |
 | Imagenes | **Cloudinary** (plan gratuito) | Hecho y probado | Carpeta `bloop`. Probado desde el backend: subida, descarga desde `res.cloudinary.com` y borrado. |
-| Backend | **Render** (plan Free) | En despliegue | Servicio nuevo `bloop-backend-eu` (Docker, region Frankfurt) creado por el Blueprint `Bloop`. Sustituye a `bloop-backend` (Ohio, `https://bloop-backend-1mwm.onrender.com`), que se borrara cuando el nuevo funcione. |
+| Backend | **Render** (plan Free) | Hecho y probado | Servicio `bloop-backend-eu` (Docker, region Frankfurt) en `https://bloop-backend-eu.onrender.com`, creado por el Blueprint `Bloop`. Probado: `UP`, 17 eventos de Kembo, login demo y respuestas de 0,2-0,5 s. Sustituye a `bloop-backend` (Ohio), que se puede borrar. |
 | Frontend | **Vercel** (plan Hobby) | Hecho y probado | `https://bloop-v1.vercel.app` (Root Directory `frontend`). Probado a traves de Vercel: pagina, rutas internas, logo, reenvio de `/api` al backend, registro, login, renovacion de sesion con la cookie y borrado de cuenta. `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` de Render apuntan a esta URL. |
 | Correo | **Gmail** (SMTP con contrasena de aplicacion) | Configurado | `smtp.gmail.com:587` con STARTTLS. Pendiente de comprobar que Render no bloquea el puerto SMTP. |
 | Pagos | Stripe (modo test) | Desactivado | Sin claves: la web funciona, pero sin pago online. |
@@ -250,6 +250,6 @@ El resto (`SPRING_PROFILES_ACTIVE=prod`, puerto, memoria de la JVM, pool de cone
 lo pone `render.yaml`; los dos secretos los genera Render.
 
 **Pasos que quedan**
-1. Terminar el cambio a Europa: rellenar las variables de `bloop-backend-eu` en Render, poner su URL en `frontend/vercel.json` y borrar el servicio de Ohio y el proyecto de Neon de `us-east-2`.
+1. Borrar el servicio antiguo `bloop-backend` (Ohio) en Render y el proyecto de Neon de `us-east-2`.
 2. Crear el primer administrador de la plataforma (en produccion no hay datos de demostracion) y probar un correo real.
 
