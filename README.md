@@ -1,257 +1,240 @@
 <p align="center">
-  <img src="frontend/public/brand/bloop-logo.png" alt="Bloop" height="72">
+  <img src="frontend/public/brand/bloop-logo.png" alt="Bloop" height="80">
 </p>
 
-<h1 align="center">Bloop</h1>
+<h3 align="center">La plataforma todo en uno para discotecas y salas de ocio nocturno</h3>
 
 <p align="center">
-  Plataforma SaaS para el ocio nocturno: entradas, control de acceso, reservados VIP, TPV de barra e inventario en un solo panel.
+  Venta de entradas · Control de acceso con QR · Reservados VIP · TPV de barra · Inventario · Analítica
 </p>
 
 <p align="center">
-  Spring Boot 4.1 · Java 21 · Angular 21 · PostgreSQL 17 · Tailwind CSS 4
+  <a href="https://bloop-v1.vercel.app"><b>🚀 Ver la demo en vivo</b></a> ·
+  <a href="#-prueba-la-demo">Cuentas de prueba</a> ·
+  <a href="#-capturas">Capturas</a> ·
+  <a href="#️-arquitectura">Arquitectura</a>
+</p>
+
+<p align="center">
+  <img alt="Java 21" src="https://img.shields.io/badge/Java-21-orange">
+  <img alt="Spring Boot 4.1" src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F">
+  <img alt="Angular 21" src="https://img.shields.io/badge/Angular-21-DD0031">
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-17%2F18-336791">
+  <img alt="Tailwind CSS 4" src="https://img.shields.io/badge/Tailwind%20CSS-4-38BDF8">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-93%20backend%20%2B%2037%20frontend-brightgreen">
+  <img alt="Despliegue" src="https://img.shields.io/badge/deploy-Vercel%20%2B%20Render%20%2B%20Neon-black">
 </p>
 
 ---
 
-## Que problema resuelve
+## ✨ Qué es Bloop
 
-Una discoteca suele trabajar con herramientas separadas: una web de venta de entradas, una app para
-leer QR en la puerta, una libreta o un Excel para los reservados, un TPV para la barra y otro Excel
-para el inventario. Los datos no se cruzan y nadie sabe al final de la noche cuanto se ha vendido,
-quien ha entrado o cuanta bebida se ha perdido.
+Una discoteca suele trabajar con herramientas que no se hablan entre sí: una web para vender entradas, una app
+para leer QR en la puerta, una libreta para los reservados, un TPV en la barra y un Excel para el inventario.
+Al final de la noche nadie sabe con certeza cuánto se ha vendido, quién ha entrado o cuánta bebida se ha perdido.
 
-**Bloop** reune todo eso en una unica aplicacion web multiempresa: cada empresa (y cada local)
-ve solo sus datos, y el personal tiene permisos segun su rol (administrador, encargado, caja,
-puerta, camarero VIP, relaciones publicas).
+**Bloop une todo eso en una sola aplicación web multiempresa.** Cada empresa y cada local ven solo sus datos, y
+cada persona del equipo trabaja con su rol: administrador, encargado, caja, puerta, camarero VIP o relaciones
+públicas. Los clientes, por su parte, compran sus entradas nominales y reservan mesa desde la web pública.
 
-## Funcionalidades principales
+## 🎮 Prueba la demo
 
-**Web publica para clientes**
-- Catalogo de eventos y locales, ficha de evento con sus dias (sesiones) y tipos de entrada.
-- Compra nominal: datos de cada asistente, control de edad minima y codigos promocionales.
-- Pago con Stripe en modo test o pago simulado en desarrollo (el resultado del pago solo se confirma por webhook firmado).
-- Area de cliente: mis entradas con QR, transferir una entrada a otra cuenta, mis pedidos, mis reservas y privacidad (RGPD).
-- Carta de la mesa VIP por QR: los clientes del reservado piden desde el movil.
+**👉 [bloop-v1.vercel.app](https://bloop-v1.vercel.app)**
+
+La demo muestra **Kembo**, una discoteca ficticia de Zaragoza con dos salas (con forma de L y de U), 20 reservados,
+tres meses de actividad simulada (fiestas, entradas, ventas de barra, reservas, inventario) y el mes siguiente
+con fiestas a la venta. Todas las personas, pedidos y ventas son **datos inventados** generados para la demo.
+
+Contraseña de todas las cuentas: **`Demo1234!`**
+
+| Cuenta | Qué puedes ver |
+|---|---|
+| `admin@kembo.test` | Todo el backoffice: panel, eventos, plano VIP, TPV, inventario, analítica, usuarios |
+| `encargado@kembo.test` | Gestión diaria del local |
+| `caja@kembo.test` | TPV de barra |
+| `puerta@kembo.test` | Control de acceso con QR |
+| `servicio@kembo.test` | Servicio de mesas VIP |
+| `cliente@kembo.test` | La web pública como cliente: entradas, pedidos y reservas |
+
+> ⏳ El backend está en un plan gratuito que se suspende tras un rato sin visitas: **la primera carga puede tardar
+> unos 50 segundos** mientras se despierta. Después va rápido.
+>
+> Es una demo pública y compartida: cualquiera puede modificar los datos. Si se estropean, se vuelven a cargar.
+
+## 📸 Capturas
+
+<p align="center">
+  <img src="docs/capturas/01-portada.jpg" alt="Portada de la web pública" width="90%">
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/capturas/02-eventos.jpg" alt="Cartelera de eventos"><p align="center"><b>Cartelera pública</b> con carteles generados para cada fiesta</p></td>
+    <td width="50%"><img src="docs/capturas/03-evento.jpg" alt="Ficha de un evento"><p align="center"><b>Ficha del evento</b>: días, tipos de entrada y compra nominal</p></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/capturas/04-panel.jpg" alt="Panel de indicadores"><p align="center"><b>Panel</b>: ingresos, entradas, TPV, asistencia y reservas</p></td>
+    <td width="50%"><img src="docs/capturas/05-plano-vip.jpg" alt="Plano VIP"><p align="center"><b>Plano VIP</b>: cada sala con su forma y el estado de cada mesa en la fiesta</p></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/capturas/07-tpv.jpg" alt="TPV de barra"><p align="center"><b>TPV de barra</b>, con recetas en ml por combinado</p></td>
+    <td width="50%"><img src="docs/capturas/06-inventario.jpg" alt="Inventario"><p align="center"><b>Inventario</b> por almacén y barra, con mínimos y avisos</p></td>
+  </tr>
+</table>
+
+## 🧩 Funcionalidades
+
+**Web pública para clientes**
+- Cartelera de eventos y locales, con buscador y filtro por ciudad.
+- Compra de **entradas nominales**: datos de cada asistente, control de edad mínima y códigos promocionales.
+- Pago con **Stripe** (modo test), confirmado solo mediante webhook firmado; pago simulado en desarrollo.
+- Área de cliente: entradas con **QR**, transferir una entrada a otra cuenta, pedidos, reservas y privacidad (RGPD).
+- Carta del reservado por **QR de mesa**: el grupo pide desde el móvil.
 
 **Backoffice del personal**
-- Empresas, locales, usuarios, roles y permisos.
-- Eventos: sesiones por dia con su propio cartel, tipos de entrada, cupos, pausa de ventas y cancelacion con reembolso automatico.
-- Pedidos con filtros, reembolsos y exportacion CSV.
-- Control de acceso: validacion de QR en la puerta (un QR solo vale una vez).
-- Reservados VIP: cada sala con su plano dibujado (rejilla + elementos), reservas por fiesta, paquetes de botellas, venta en taquilla, pedidos de mesa, cobro y cierre de cuenta ("Liberar mesa").
-- TPV de barra y taquilla: cajas con fondo y arqueo, combinados con receta en ml, anulaciones y descuentos autorizados.
-- Inventario de discoteca: proveedores, entradas con albaran y coste, traspasos almacen -> barra, recuento de cierre, control de merma, pedido sugerido y envases retornables.
-- Promotores (RR. PP.) con comision y codigos promocionales.
-- CRM de clientes, consentimientos y auditoria de acciones.
-- Panel de indicadores, analitica, prevision de asistencia y alertas.
-- Correo transaccional con plantillas HTML (entradas, reservas, recuperacion de contrasena...) e imagenes en Cloudinary.
+- **Eventos** con varios días (sesiones), cartel propio por día, tipos de entrada, cupos, pausa de ventas y
+  cancelación con reembolso automático.
+- **Control de acceso**: validación de QR en la puerta; cada QR solo vale una vez.
+- **Reservados VIP**: cada sala con su plano dibujado, reservas por fiesta, paquetes de botellas, venta en
+  taquilla, pedidos de mesa, cobro y cierre de cuenta.
+- **TPV** de barra y taquilla: cajas con fondo y arqueo, combinados con receta en ml, anulaciones y descuentos autorizados.
+- **Inventario de discoteca**: proveedores, entradas con albarán y coste, traspasos almacén → barra, recuento de
+  cierre, control de merma, pedido sugerido y envases retornables.
+- **Comercial**: relaciones públicas con comisión, códigos promocionales y CRM de clientes con consentimientos.
+- **Analítica**: panel de indicadores, informes, exportación CSV, previsión de asistencia y alertas.
+- **Correo** transaccional con plantillas HTML (entradas, reservas, recuperación de contraseña) e **imágenes** en Cloudinary.
+- Auditoría de acciones, usuarios, roles y permisos.
 
-**Seguridad**
-- JWT de acceso + refresh token en cookie HttpOnly (SameSite=Strict), bloqueo temporal tras intentos fallidos y rotacion de claves.
-- Aislamiento multiempresa en todas las consultas (un recurso de otra empresa devuelve 404).
-- No se guardan datos de tarjeta; del documento de identidad solo se guarda el tipo y los 4 ultimos caracteres.
+## 🏗️ Arquitectura
 
-## Tecnologias
+```mermaid
+flowchart LR
+    U([Navegador]) --> V["Vercel<br/>Angular 21"]
+    V -- "/api/*" --> R["Render · Frankfurt<br/>Spring Boot 4.1 (Docker)"]
+    R --> N[("Neon · Frankfurt<br/>PostgreSQL")]
+    R --> C["Cloudinary<br/>imágenes"]
+    R --> M["SMTP<br/>correo"]
+    R -.-> S["Stripe<br/>pagos (test)"]
+```
 
-| Capa | Tecnologia |
+- **Monolito modular**: un único backend organizado por módulos de negocio (eventos, pedidos, accesos, reservas,
+  TPV, inventario...). Cada módulo sigue la misma estructura: `controller`, `dto`, `entity`, `repository`, `service` y `mapper`.
+- El frontend llama siempre a `/api` en su mismo dominio y **Vercel reenvía esas peticiones al backend**; así la
+  cookie de sesión funciona sin problemas de CORS.
+- Backend y base de datos están en la **misma región (Frankfurt)**, cerca de los usuarios.
+
+## 🔍 Aspectos técnicos destacados
+
+- **Multiempresa real**: la empresa sale siempre del usuario autenticado y todas las consultas filtran por ella;
+  pedir un recurso de otra empresa devuelve 404.
+- **Concurrencia sin sobreventa**: el cupo de entradas se descuenta con `UPDATE` condicional, cada QR se marca como
+  usado de forma atómica y las reservas no pueden solaparse gracias a una restricción `EXCLUDE USING gist` de PostgreSQL.
+- **Idempotencia**: ventas del TPV, pedidos y cobros de mesa llevan clave de idempotencia; un doble clic no cobra dos veces.
+- **Seguridad**: JWT de acceso + refresh token en cookie `HttpOnly` y `SameSite=Strict`, bloqueo temporal tras
+  intentos fallidos, rotación de claves y permisos por rol. No se guardan datos de tarjeta, y del documento de
+  identidad solo el tipo y los 4 últimos caracteres.
+- **Esquema versionado** con Flyway (17 migraciones) y validación del modelo al arrancar.
+- **Pruebas**: 93 tests de backend contra un **PostgreSQL embebido real** (sin simular la base de datos) y 37 tests de
+  frontend con Vitest. Integración continua con GitHub Actions.
+
+## 🛠️ Tecnologías
+
+| Capa | Tecnología |
 |---|---|
-| Backend | Java 21, Spring Boot 4.1 (Web MVC, Security, OAuth2 Resource Server/JWT, Data JPA, Validation, Mail, Actuator), Flyway, springdoc-openapi, Lombok |
-| Base de datos | PostgreSQL 17 (en local, PostgreSQL embebido: no hace falta instalarlo) |
-| Frontend | Angular 21 (componentes standalone, signals), Tailwind CSS 4, TypeScript 5.9 |
-| Pruebas | JUnit 5 + PostgreSQL embebido + GreenMail (backend), Vitest (frontend) |
-| Servicios externos | Stripe (modo test), Cloudinary (imagenes), cualquier servidor SMTP (Gmail, Brevo...) |
-| Despliegue | Docker (backend), Vercel (frontend), Render + Neon (backend y base de datos) |
+| Backend | Java 21, Spring Boot 4.1 (Web MVC, Security, OAuth2 Resource Server/JWT, Data JPA, Validation, Mail, Actuator), Flyway, springdoc-openapi |
+| Base de datos | PostgreSQL (17 en local con PostgreSQL embebido, 18 en Neon) |
+| Frontend | Angular 21 (componentes standalone y signals), TypeScript 5.9, Tailwind CSS 4 |
+| Pruebas | JUnit 5, PostgreSQL embebido, GreenMail, Vitest |
+| Servicios | Stripe (modo test), Cloudinary, SMTP (Gmail) |
+| Despliegue | Vercel (frontend), Render con Docker (backend), Neon (PostgreSQL), GitHub Actions (CI) |
 
-## Estructura
+## 📁 Estructura
 
 ```
-BLOOP_V2/
-├── backend/                 API REST Spring Boot (monolito modular)
+├── backend/                  API REST Spring Boot (monolito modular)
 │   ├── src/main/java/com/bloop/
-│   │   ├── authentication/  login, JWT, registro, recuperacion de contrasena
-│   │   ├── tenants/ venues/ users/
+│   │   ├── authentication/   login, JWT, registro, recuperación de contraseña
 │   │   ├── events/ orders/ payments/ ticketing/ accesscontrol/
-│   │   ├── reservations/ vipservice/        reservados VIP y servicio de mesa
-│   │   ├── pos/ inventory/                  TPV e inventario
+│   │   ├── reservations/ vipservice/         reservados VIP y servicio de mesa
+│   │   ├── pos/ inventory/                   TPV e inventario
 │   │   ├── promoters/ customers/ analytics/ dashboard/ audit/ notifications/ media/
-│   │   ├── demo/                            datos de demostracion (solo perfil dev)
-│   │   └── shared/                          configuracion, seguridad, errores
-│   ├── src/main/resources/db/migration/    esquema con Flyway (V1...V17)
+│   │   ├── tenants/ venues/ users/ shared/
+│   │   └── demo/                             datos de demostración (Kembo)
+│   ├── src/main/resources/db/migration/     migraciones Flyway V1…V17
 │   └── Dockerfile
-├── frontend/                Angular 21
-│   ├── src/app/public/      web publica para clientes
-│   ├── src/app/features/    backoffice del personal
-│   └── vercel.json          despliegue en Vercel
-├── render.yaml              despliegue del backend en Render
-├── docker-compose.yml       PostgreSQL + Mailpit en local (opcional)
-├── start-dev.bat / stop-dev.bat / run-tests.bat   atajos para Windows
-└── .env.example             plantilla de variables de entorno (sin secretos)
+├── frontend/                 Angular 21
+│   ├── src/app/public/       web pública para clientes
+│   ├── src/app/features/     backoffice del personal
+│   └── vercel.json           despliegue en Vercel
+├── render.yaml               despliegue del backend en Render
+├── docker-compose.yml        PostgreSQL + Mailpit en local (opcional)
+└── .env.example              plantilla de variables de entorno (sin secretos)
 ```
 
-Cada modulo del backend sigue la misma estructura: `controller/`, `dto/`, `entity/`, `repository/`, `service/` y `mapper/`.
+## 💻 Ejecutar en local
 
-## Requisitos
-
-- **JDK 21** o superior (Maven no hace falta: se usa el wrapper `mvnw`).
-- **Node.js 22** (probado con 22.14) y npm.
-- **Docker** solo si quieres PostgreSQL y Mailpit en contenedores; no es obligatorio.
-
-## Instalacion
+**Requisitos:** JDK 21 o superior y Node.js 22. No hace falta instalar Maven (se usa `mvnw`) ni PostgreSQL (se usa uno embebido).
 
 ```bash
-git clone https://github.com/<tu-usuario>/BLOOP_V2.git
-cd BLOOP_V2
-cp .env.example .env          # en Windows: copy .env.example .env
-cd frontend && npm install
-```
+git clone https://github.com/Juaan20/Bloop_v1.git
+cd Bloop_v1
+cp .env.example .env            # en Windows: copy .env.example .env
 
-El `.env` de ejemplo ya funciona en local: correo en modo pruebas y datos de demostracion activados.
-
-## Ejecucion en local
-
-**Opcion rapida en Windows:** `start-dev.bat` abre el backend y el frontend en dos ventanas y `stop-dev.bat` lo para todo.
-
-**Backend** (con PostgreSQL embebido, sin Docker):
-
-```bash
+# Backend: http://localhost:8080 (Swagger en /swagger-ui.html)
 cd backend
-./mvnw spring-boot:test-run      # Windows: mvnw.cmd spring-boot:test-run
+./mvnw spring-boot:test-run     # Windows: mvnw.cmd spring-boot:test-run
+
+# Frontend: http://localhost:4200
+cd ../frontend
+npm install
+npm start
 ```
 
-- API en `http://localhost:8080` y documentacion Swagger en `http://localhost:8080/swagger-ui.html`.
-- La base de datos se guarda en `backend/.local-db` (puerto 5433). La primera vez se crean los datos de demostracion.
-- Para pararlo de forma limpia en Windows usa `stop-dev.bat` (detiene tambien PostgreSQL).
+- La primera vez se crea la base de datos local (`backend/.local-db`) con los datos de demostración de Kembo.
+- En Windows, `start-dev.bat` arranca las dos partes y `stop-dev.bat` las para (incluido PostgreSQL).
+- Pruebas: `cd backend && ./mvnw test` y `cd frontend && npx ng build && npm test`.
 
-**Backend con Docker** (alternativa): `docker compose up -d` levanta PostgreSQL en el puerto 5432 y Mailpit
-(los correos se ven en `http://localhost:8025`); despues `./mvnw spring-boot:run` desde `backend/`.
+## ⚙️ Variables de entorno
 
-**Frontend:**
+En local se leen del fichero `.env` (plantilla en `.env.example`). En producción se configuran en el panel de
+cada servicio y **nunca se suben al repositorio**.
 
-```bash
-cd frontend
-npm start                         # http://localhost:4200 (redirige /api al backend)
-```
-
-**Datos de demostracion (solo en local):** la discoteca *Kembo* (Zaragoza) "se que no es así pero por si acaso no pongo el mismo nombre jajaja" con dos salas, 20 reservados,
-tres meses de actividad y el mes siguiente con preventa. Todas las cuentas usan la contrasena de `DEMO_PASSWORD`
-(por defecto `Demo1234!`):
-
-| Cuenta | Rol |
+| Variable | Para qué sirve |
 |---|---|
-| `admin@kembo.test` | Administrador de la empresa |
-| `encargado@kembo.test` | Encargado |
-| `caja@kembo.test` | TPV de barra |
-| `puerta@kembo.test` | Control de acceso |
-| `servicio@kembo.test` | Camarero VIP |
-| `rrpp@kembo.test` | Relaciones publicas |
-| `cliente@kembo.test` | Cliente de la web |
-| `superadmin@bloop.test` | Administrador de la plataforma |
+| `SPRING_PROFILES_ACTIVE` | `dev` en local, `prod` en producción |
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Conexión a PostgreSQL (en local no hacen falta con el embebido) |
+| `JWT_SECRET`, `QR_SECRET` | Firma de sesiones y de los QR (mínimo 32 caracteres) |
+| `PUBLIC_URL`, `CORS_ALLOWED_ORIGINS` | URL pública del frontend (enlaces de los correos, vuelta de Stripe) |
+| `MAIL_ENABLED`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM`... | Correo SMTP. Con `MAIL_ENABLED=false` los correos solo se guardan y se escriben en el log |
+| `MEDIA_PROVIDER`, `MEDIA_CLOUDINARY_*` | Imágenes en disco local o en Cloudinary |
+| `STRIPE_ENABLED`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Pago con Stripe en modo test (solo claves `sk_test_`) |
+| `DEMO_DATA`, `DEMO_PASSWORD`, `DEMO_DATASET` | Datos de demostración (solo perfil `dev`) |
 
-**Pruebas:**
+## ☁️ Despliegue
 
-```bash
-cd backend && ./mvnw test                     # 93 tests con PostgreSQL embebido
-cd frontend && npx ng build && npm test       # build de produccion + 37 tests
-```
+La demo funciona con planes gratuitos:
 
-## Variables de entorno
-
-En local se leen del fichero `.env` (plantilla en `.env.example`). En produccion se configuran en el panel
-del proveedor (Render/Vercel); **nunca se suben al repositorio**.
-
-| Variable | Para que sirve | Local | Produccion |
-|---|---|---|---|
-| `SPRING_PROFILES_ACTIVE` | Perfil de Spring (`dev` o `prod`) | `dev` (por defecto) | `prod` |
-| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Conexion a PostgreSQL | no hace falta con el embebido | obligatorias |
-| `JWT_SECRET`, `QR_SECRET` | Firma de sesiones y QR (minimo 32 caracteres) | las de `.env.example` | obligatorias, aleatorias |
-| `PUBLIC_URL` | URL del frontend (enlaces de los correos, vuelta de Stripe) | `http://localhost:4200` | URL de Vercel |
-| `CORS_ALLOWED_ORIGINS` | Origenes permitidos | `http://localhost:4200` | URL de Vercel |
-| `MAIL_ENABLED` | `false` = modo pruebas (los correos se guardan y se escriben en el log) | `false` | `true` |
-| `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_SMTP_AUTH`, `MAIL_STARTTLS_ENABLE`, `MAIL_FROM`, `MAIL_FROM_NAME` | Servidor SMTP. Con Gmail: `smtp.gmail.com:587` y una *contrasena de aplicacion* | opcional | obligatorias |
-| `MEDIA_PROVIDER` | `local` (disco) o `cloudinary` | `local` | `cloudinary` |
-| `MEDIA_CLOUDINARY_CLOUD_NAME`, `MEDIA_CLOUDINARY_API_KEY`, `MEDIA_CLOUDINARY_API_SECRET` | Cuenta de Cloudinary | opcional | obligatorias |
-| `STRIPE_ENABLED`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Pago con Stripe en modo test (solo claves `sk_test_`) | opcional | opcional |
-| `DEMO_DATA`, `DEMO_PASSWORD`, `DEMO_DATASET` | Datos de demostracion (solo perfil `dev`) | activados | no se usan |
-
-## Despliegue
-
-Vercel sirve muy bien el frontend Angular (ficheros estaticos), pero **no ejecuta un servidor Java permanente**,
-asi que el backend va en un servicio compatible con Docker. La arquitectura propuesta, con planes gratuitos:
-
-```
-Navegador ──> Vercel (Angular)
-                 │  /api/*  (reenvio en vercel.json: mismo origen, la cookie de sesion funciona)
-                 ▼
-              Render (Spring Boot en Docker) ──> Neon (PostgreSQL)
-                 ├──> Cloudinary (imagenes)
-                 ├──> SMTP (correo)
-                 └──> Stripe (pagos en modo test, opcional)
-```
-
-**1. Base de datos en Neon** (neon.tech, plan gratuito; probado con PostgreSQL 18)
-- El proyecto ya esta enlazado en `.neon` y `neon.ts` (CLI de Neon: `npm i -g neon`). Con `neon login` y
-  `neon env pull` se descargan las variables a `.env` (o a `.env.local` si no hay `.env`; los dos ignorados por Git): `DATABASE_URL` (pooler)
-  y `DATABASE_URL_UNPOOLED` (directa).
-- Usa la conexion **directa** (`DATABASE_URL_UNPOOLED`, host sin `-pooler`): el backend ya tiene su propio
-  pool (HikariCP) y Flyway migra al arrancar, algo que el pooler de Neon (PgBouncer) no admite bien.
-- Conviertela a las tres variables del backend: de `postgresql://USUARIO:CLAVE@HOST/neondb?...` salen
-  `DB_URL=jdbc:postgresql://HOST/neondb?sslmode=require`, `DB_USERNAME=USUARIO` y `DB_PASSWORD=CLAVE`.
-- Flyway crea todas las tablas al primer arranque (incluida la extension `btree_gist`).
-- El backend de Render va en la misma region que la base de datos: `frankfurt` en `render.yaml`, porque Neon esta en `aws-eu-central-1` (Frankfurt), cerca de los usuarios.
-
-**2. Backend en Render** (render.com, plan gratuito)
-- *New > Blueprint* y elige este repositorio: `render.yaml` crea el servicio `bloop-backend` con el `Dockerfile`.
-- Rellena en el panel las variables marcadas como `sync: false` (base de datos, correo, Cloudinary, URLs).
-  `JWT_SECRET` y `QR_SECRET` las genera Render automaticamente.
-- Render solo vuelve a desplegar cuando cambia algo de `backend/` (`buildFilter` en `render.yaml`).
-  Si cambias solo variables de entorno, usa *Manual Deploy* o *Save, rebuild, and deploy*.
-- Comprueba que responde en `https://<tu-servicio>.onrender.com/actuator/health`. Render anade un sufijo al nombre si ya esta cogido (p. ej. `bloop-backend-1mwm`).
-
-**3. Frontend en Vercel** (vercel.com, plan Hobby gratuito)
-- *Add New > Project*, importa el repositorio y pon **Root Directory = `frontend`**. El resto lo toma de `frontend/vercel.json`.
-- La URL del backend esta en `frontend/vercel.json` (`rewrites`); si cambia, actualizala ahi.
-- Al terminar, copia la URL de Vercel en `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` del backend y vuelve a desplegarlo.
-
-**Servicios externos necesarios**
-
-| Servicio | Para que | Obligatorio |
+| Pieza | Servicio | Notas |
 |---|---|---|
-| Neon (o cualquier PostgreSQL 17 o superior) | Base de datos | Si |
-| Cloudinary | Carteles e imagenes (el disco de Render se borra en cada despliegue) | Si, para subir imagenes |
-| SMTP (Gmail con contrasena de aplicacion, Brevo, Resend...) | Correos de entradas, reservas y contrasenas | Si, para enviar correo |
-| Stripe (modo test) | Pago online de entradas | Opcional |
+| Frontend | **Vercel** | *Root Directory* `frontend`; `frontend/vercel.json` reenvía `/api` al backend |
+| Backend | **Render** (Docker, Frankfurt) | Blueprint en `render.yaml`; solo se redespliega cuando cambia `backend/` |
+| Base de datos | **Neon** (Frankfurt) | Conexión directa (sin pooler): el backend ya tiene su pool y Flyway migra al arrancar |
+| Imágenes | **Cloudinary** | El disco de Render no es persistente |
+| Correo | **Gmail** (SMTP) | Con contraseña de aplicación |
 
-**A tener en cuenta en los planes gratuitos**
-- El backend de Render "se duerme" tras unos minutos sin uso: la primera peticion puede tardar alrededor de un minuto.
-- Algunos planes gratuitos bloquean la salida por los puertos SMTP. Si el correo falla en produccion
-  (tiempo de espera agotado), usa un proveedor que admita otro puerto (por ejemplo Brevo en el 2525).
-- En produccion (`prod`) **no se crean datos de demostracion** y el pago simulado esta desactivado:
-  la plataforma arranca vacia y el pago online requiere claves de Stripe en modo test.
-- El webhook de Stripe debe apuntar directamente al backend: `https://<backend>/api/payments/stripe/webhook`.
+Pasos resumidos:
+1. **Neon**: crear el proyecto y convertir la conexión directa a `DB_URL=jdbc:postgresql://HOST/neondb?sslmode=require`,
+   `DB_USERNAME` y `DB_PASSWORD`.
+2. **Render**: *New → Blueprint* con este repositorio y rellenar las variables marcadas como `sync: false`.
+   `JWT_SECRET` y `QR_SECRET` las genera Render.
+3. **Vercel**: importar el repositorio con *Root Directory* `frontend` y poner su URL en `PUBLIC_URL` y
+   `CORS_ALLOWED_ORIGINS` del backend.
 
-## Estado del despliegue
+En producción no se crean datos de demostración automáticamente: los de esta demo se cargaron una sola vez con
+los generadores del perfil `dev` apuntando a la base de datos de Neon.
 
-Registro de lo que ya esta montado (noviembre de 2026). Web publica: **https://bloop-v1.vercel.app**. Las claves y contrasenas **no estan en este repositorio**:
-viven en el panel de cada servicio y, en local, en `.env` / `.env.local` (ignorados por Git).
+## 👤 Autor
 
-| Pieza | Servicio | Estado | Detalles |
-|---|---|---|---|
-| Base de datos | **Neon** (plan gratuito) | Hecho y probado | Proyecto `bloop-eu` en `aws-eu-central-1` (Frankfurt), rama `main`, PostgreSQL 18, enlazado en `.neon`. Flyway ha aplicado las 17 migraciones y estan cargados los datos de demostracion de Kembo. (Antes estuvo en `us-east-2`; se movio a Europa porque la region de un proyecto no se puede cambiar, y el proyecto antiguo ya esta borrado.) |
-| Imagenes | **Cloudinary** (plan gratuito) | Hecho y probado | Carpeta `bloop`. Probado desde el backend: subida, descarga desde `res.cloudinary.com` y borrado. |
-| Backend | **Render** (plan Free) | Hecho y probado | Servicio `bloop-backend-eu` (Docker, region Frankfurt) en `https://bloop-backend-eu.onrender.com`, creado por el Blueprint `Bloop`. Probado: `UP`, 17 eventos de Kembo, login demo y respuestas de 0,2-0,5 s. Sustituye a `bloop-backend` (Ohio), que se puede borrar. |
-| Frontend | **Vercel** (plan Hobby) | Hecho y probado | `https://bloop-v1.vercel.app` (Root Directory `frontend`). Probado a traves de Vercel: pagina, rutas internas, logo, reenvio de `/api` al backend, registro, login, renovacion de sesion con la cookie y borrado de cuenta. `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` de Render apuntan a esta URL. |
-| Correo | **Gmail** (SMTP con contrasena de aplicacion) | Configurado | `smtp.gmail.com:587` con STARTTLS. Pendiente de comprobar que Render no bloquea el puerto SMTP. |
-| Pagos | Stripe (modo test) | Desactivado | Sin claves: la web funciona, pero sin pago online. |
+Proyecto desarrollado por **[Juaan20](https://github.com/Juaan20)**.
 
-**Variables rellenadas en Render** (solo los nombres; los valores estan en el panel de Render):
-`DB_URL`, `DB_USERNAME`, `DB_PASSWORD` (conexion directa de Neon), `PUBLIC_URL`, `CORS_ALLOWED_ORIGINS`,
-`MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM`,
-`MEDIA_CLOUDINARY_CLOUD_NAME`, `MEDIA_CLOUDINARY_API_KEY`, `MEDIA_CLOUDINARY_API_SECRET`.
-El resto (`SPRING_PROFILES_ACTIVE=prod`, puerto, memoria de la JVM, pool de conexiones, `JWT_SECRET`, `QR_SECRET`...)
-lo pone `render.yaml`; los dos secretos los genera Render.
-
-**Pasos que quedan**
-1. Borrar el servicio antiguo `bloop-backend` (Ohio) en Render (el proyecto de Neon de `us-east-2` ya esta borrado).
-2. Crear el primer administrador de la plataforma (en produccion no hay datos de demostracion) y probar un correo real.
-
+¿Te interesa el proyecto o tienes alguna sugerencia? Abre un *issue* en este repositorio.

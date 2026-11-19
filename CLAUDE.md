@@ -4,6 +4,8 @@
 > Sincronizacion SOLO manual y unidireccional VENUEFLOW -> BLOOP_V2, cuando el propietario lo pida
 > expresamente ("Pasa los cambios de VENUEFLOW a BLOOP_V2"). Procedimiento completo en `README.md`,
 > seccion "Sincronizacion con VENUEFLOW"; el ultimo commit sincronizado esta en `.sync/venueflow-sync.txt`.
+> Ficheros propios de BLOOP_V2 que una sincronizacion no debe pisar: README.md, CLAUDE.md, .gitignore, .env*, render.yaml,
+> frontend/vercel.json, neon.ts, package*.json de la raiz, .sync/ y docs/capturas/ (capturas del README).
 > Nunca tocar VENUEFLOW desde aqui, nunca pasar cambios de BLOOP_V2 a VENUEFLOW y no hacer commit/push sin orden.
 
 Guia para futuras sesiones de Claude Code. Leer antes de modificar el proyecto.
