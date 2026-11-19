@@ -204,6 +204,8 @@ Navegador ──> Vercel (Angular)
 - *New > Blueprint* y elige este repositorio: `render.yaml` crea el servicio `bloop-backend` con el `Dockerfile`.
 - Rellena en el panel las variables marcadas como `sync: false` (base de datos, correo, Cloudinary, URLs).
   `JWT_SECRET` y `QR_SECRET` las genera Render automaticamente.
+- Render solo vuelve a desplegar cuando cambia algo de `backend/` (`buildFilter` en `render.yaml`).
+  Si cambias solo variables de entorno, usa *Manual Deploy* o *Save, rebuild, and deploy*.
 - Comprueba que responde en `https://<tu-servicio>.onrender.com/actuator/health`. Render anade un sufijo al nombre si ya esta cogido (p. ej. `bloop-backend-1mwm`).
 
 **3. Frontend en Vercel** (vercel.com, plan Hobby gratuito)

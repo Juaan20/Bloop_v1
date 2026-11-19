@@ -14,6 +14,11 @@ services:
     dockerContext: ./backend
     healthCheckPath: /actuator/health
     autoDeploy: true
+    # Solo se redespliega cuando cambia el backend (codigo, pom.xml, Dockerfile...). Los cambios del
+    # README, del frontend (lo publica Vercel) o de neon.ts no gastan minutos de compilacion en Render.
+    buildFilter:
+      paths:
+        - backend/**
     envVars:
       # --- Perfil y servidor ---
       - key: SPRING_PROFILES_ACTIVE
