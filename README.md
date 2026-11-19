@@ -191,7 +191,7 @@ Navegador ──> Vercel (Angular)
 
 **1. Base de datos en Neon** (neon.tech, plan gratuito; probado con PostgreSQL 18)
 - El proyecto ya esta enlazado en `.neon` y `neon.ts` (CLI de Neon: `npm i -g neon`). Con `neon login` y
-  `neon env pull` se descargan las variables a `.env.local` (ignorado por Git): `DATABASE_URL` (pooler)
+  `neon env pull` se descargan las variables a `.env` (o a `.env.local` si no hay `.env`; los dos ignorados por Git): `DATABASE_URL` (pooler)
   y `DATABASE_URL_UNPOOLED` (directa).
 - Usa la conexion **directa** (`DATABASE_URL_UNPOOLED`, host sin `-pooler`): el backend ya tiene su propio
   pool (HikariCP) y Flyway migra al arrancar, algo que el pooler de Neon (PgBouncer) no admite bien.
@@ -235,7 +235,7 @@ viven en el panel de cada servicio y, en local, en `.env` / `.env.local` (ignora
 
 | Pieza | Servicio | Estado | Detalles |
 |---|---|---|---|
-| Base de datos | **Neon** (plan gratuito) | Hecho y probado | Proyecto `bloop-eu` en `aws-eu-central-1` (Frankfurt), rama `main`, PostgreSQL 18, enlazado en `.neon`. Flyway ha aplicado las 17 migraciones y estan cargados los datos de demostracion de Kembo. (Antes estuvo en `us-east-2`; se movio a Europa porque la region de un proyecto no se puede cambiar.) |
+| Base de datos | **Neon** (plan gratuito) | Hecho y probado | Proyecto `bloop-eu` en `aws-eu-central-1` (Frankfurt), rama `main`, PostgreSQL 18, enlazado en `.neon`. Flyway ha aplicado las 17 migraciones y estan cargados los datos de demostracion de Kembo. (Antes estuvo en `us-east-2`; se movio a Europa porque la region de un proyecto no se puede cambiar, y el proyecto antiguo ya esta borrado.) |
 | Imagenes | **Cloudinary** (plan gratuito) | Hecho y probado | Carpeta `bloop`. Probado desde el backend: subida, descarga desde `res.cloudinary.com` y borrado. |
 | Backend | **Render** (plan Free) | Hecho y probado | Servicio `bloop-backend-eu` (Docker, region Frankfurt) en `https://bloop-backend-eu.onrender.com`, creado por el Blueprint `Bloop`. Probado: `UP`, 17 eventos de Kembo, login demo y respuestas de 0,2-0,5 s. Sustituye a `bloop-backend` (Ohio), que se puede borrar. |
 | Frontend | **Vercel** (plan Hobby) | Hecho y probado | `https://bloop-v1.vercel.app` (Root Directory `frontend`). Probado a traves de Vercel: pagina, rutas internas, logo, reenvio de `/api` al backend, registro, login, renovacion de sesion con la cookie y borrado de cuenta. `PUBLIC_URL` y `CORS_ALLOWED_ORIGINS` de Render apuntan a esta URL. |
@@ -250,6 +250,6 @@ El resto (`SPRING_PROFILES_ACTIVE=prod`, puerto, memoria de la JVM, pool de cone
 lo pone `render.yaml`; los dos secretos los genera Render.
 
 **Pasos que quedan**
-1. Borrar el servicio antiguo `bloop-backend` (Ohio) en Render y el proyecto de Neon de `us-east-2`.
+1. Borrar el servicio antiguo `bloop-backend` (Ohio) en Render (el proyecto de Neon de `us-east-2` ya esta borrado).
 2. Crear el primer administrador de la plataforma (en produccion no hay datos de demostracion) y probar un correo real.
 
